@@ -1,0 +1,16 @@
+{
+  "name": "nexus-backend",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "dev": "bun --watch server.js",
+    "start": "bun server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "mongoose": "^9.7.1"
+  }
+}

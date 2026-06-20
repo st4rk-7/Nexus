@@ -42,6 +42,24 @@ e.g. `POST /api/devices/register` means "create a new device." REST treats thing
 - **server.js** — boots everything and wires it together.
 Separation = each file has one job. Easier to read, test, and explain.
 
+## Express (the web server framework)
+
+**`express()`** — creates our app: the thing that listens for HTTP requests and routes
+each one to a handler function.
+
+**Route** — `app.get("/health", handler)` means "when a GET request hits /health, run
+this function." The handler gets `(req, res)`: `req` = the incoming request, `res` = the
+reply we build. `res.json({...})` sends JSON back.
+
+**Middleware** — a function Express runs on a request *before* it reaches your route.
+`app.use(express.json())` is middleware that reads a JSON request body into `req.body`.
+
+**Port** — the numbered "door" the server listens on (we use 3000 in dev). The browser
+reaches it at `http://localhost:3000`.
+
+**Bun** — our runtime + package manager (replaces node + npm). `bun add x` installs,
+`bun --watch server.js` runs and auto-restarts on save (no nodemon needed).
+
 ---
 
-*(more entries added as we build — Mongoose, middleware, JWT, etc.)*
+*(more entries added as we build — Mongoose, .env, JWT, etc.)*

@@ -23,7 +23,7 @@ code into models / routes / services (LO1).
 **Done when:**
 - [x] git initialised
 - [x] progress tracking file exists
-- [ ] backend scaffolded (Express server boots, responds to a health-check route)
+- [x] backend scaffolded (Express server boots, responds to a health-check route)
 - [ ] MongoDB Atlas connected (free tier)
 - [ ] understand the folder structure
 
@@ -111,8 +111,10 @@ code into models / routes / services (LO1).
 - **Learning artifacts:** LEARNING.md glossary kept current; README as the front door.
 
 ## Current state
-- Phase 0 in progress. git + docs + project hygiene set up (.gitignore, README, LEARNING.md).
-- Next: scaffold the Express backend.
+- Phase 0 in progress. git + docs + hygiene done. Backend scaffolded with Bun:
+  Express boots, `GET /health` returns `{status:"ok"}`, unknown routes 404. Verified via curl.
+- Next: connect MongoDB Atlas.
 
 ## Next action
-Scaffold the backend (Express + a `/health` route) and connect MongoDB Atlas.
+Connect MongoDB Atlas: user creates a free cluster + connection string, we put it in
+backend/.env and wire Mongoose to connect on boot.
