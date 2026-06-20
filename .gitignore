@@ -1,0 +1,24 @@
+# Dependencies (regenerable with `npm install` — never commit)
+node_modules/
+
+# Secrets & environment (NEVER commit — contains DB password, JWT secret)
+.env
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build output (frontend, later)
+dist/
+build/
+
+# Uploaded firmware files (we store these locally during dev)
+uploads/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
