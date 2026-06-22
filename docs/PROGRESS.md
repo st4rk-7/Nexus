@@ -16,7 +16,7 @@ Update it at the end of every work block.
 
 ## The 8 phases
 
-### Phase 0 — Foundations & setup  `[~]`
+### Phase 0 — Foundations & setup  `[x]`
 **Goal:** understand the architecture and get an empty-but-runnable backend.
 **Explain:** what MERN is, client–server model, what a REST API is, why we split
 code into models / routes / services (LO1).
@@ -24,8 +24,8 @@ code into models / routes / services (LO1).
 - [x] git initialised
 - [x] progress tracking file exists
 - [x] backend scaffolded (Express server boots, responds to a health-check route)
-- [ ] MongoDB Atlas connected (free tier)
-- [ ] understand the folder structure
+- [x] MongoDB Atlas connected (free tier)
+- [x] understand the folder structure
 
 ### Phase 1 — Device registry  `[ ]`
 **Goal:** a device can register and be listed/tracked.
@@ -109,12 +109,16 @@ code into models / routes / services (LO1).
 - **Dev ergonomics:** `bun --watch` for auto-restart; .env for secrets (+ .env.example committed);
   one consistent JSON response shape + central error handler (added in Phase 1).
 - **Learning artifacts:** LEARNING.md glossary kept current; README as the front door.
+- **Bun + mongoose 9/bson 7 gotcha:** bson calls `v8.isBuildingSnapshot()` which this Bun
+  build doesn't implement → crash on load. Fixed with a 3-line preload shim (`bun-patch.js`,
+  wired via `bunfig.toml`). Delete the shim once Bun implements it. (Node runs it fine without.)
+- **DB user gotcha:** Atlas auto-generated user failed auth; created a fresh user `nexusadmin`
+  with a known password. Lesson: set DB credentials yourself, use only letters+numbers.
 
 ## Current state
-- Phase 0 in progress. git + docs + hygiene done. Backend scaffolded with Bun:
-  Express boots, `GET /health` returns `{status:"ok"}`, unknown routes 404. Verified via curl.
-- Next: connect MongoDB Atlas.
+- **Phase 0 COMPLETE.** Backend runs on Bun, connects to MongoDB Atlas, `/health` works.
+- Next: Phase 1 — Device registry.
 
 ## Next action
-Connect MongoDB Atlas: user creates a free cluster + connection string, we put it in
-backend/.env and wire Mongoose to connect on boot.
+Phase 1: build the Device model (its data shape), then `POST /api/devices/register`
+so a device can register itself and be saved to the database.

@@ -1,8 +1,12 @@
 // server.js — the entry point of the backend.
-// Its only job right now: start an Express web server and answer a health check.
-// (Database wiring comes next, in its own step.)
+// It loads our secrets, connects to the database, then starts the web server.
+
+// This MUST be first: it reads the .env file and loads PORT, MONGODB_URI, etc.
+// into process.env so the rest of the code can use them.
+import "dotenv/config";
 
 import express from "express";
+import { connectDB } from "./config/db.js";
 
 // `express()` creates our application — the thing that listens for HTTP
 // requests and decides how to respond to each one.
@@ -24,6 +28,10 @@ app.get("/health", (req, res) => {
 // --- Start the server ---------------------------------------------------
 // PORT comes from the environment if set, else default to 3000.
 const PORT = process.env.PORT || 3000;
+
+// Connect to the database FIRST, then start listening for requests.
+// (No point accepting requests if we can't store/read data.)
+await connectDB(process.env.MONGODB_URI);
 
 app.listen(PORT, () => {
   console.log(`Nexus backend running on http://localhost:${PORT}`);

@@ -60,6 +60,24 @@ reaches it at `http://localhost:3000`.
 **Bun** — our runtime + package manager (replaces node + npm). `bun add x` installs,
 `bun --watch server.js` runs and auto-restarts on save (no nodemon needed).
 
+## Database & secrets
+
+**`.env`** — a file holding secrets (DB password, etc.) as `KEY=value` lines. It's listed
+in `.gitignore` so it's never saved to git. `import "dotenv/config"` loads it into
+`process.env` so code can read `process.env.MONGODB_URI`. `.env.example` is a safe copy
+(no real values) that *is* committed, so others know what keys are needed.
+
+**Mongoose** — the helper that talks to MongoDB for us. `mongoose.connect(uri)` opens the
+connection using the secret address from `.env`. We put this in its own file (`config/db.js`)
+so each file has one job (clean structure = LO1 marks).
+
+**Connection string** — the secret address of the database, e.g.
+`mongodb+srv://user:password@cluster.../nexus`. The bit after the last `/` (`nexus`) names
+the database. Passwords with symbols (`@ / : #`) break it — use letters+numbers only.
+
+**`bunfig.toml` / preload** — Bun's config file. `preload` runs a file before our app.
+We use it to load `bun-patch.js`, a shim that fixes a missing Bun feature the DB needs.
+
 ---
 
-*(more entries added as we build — Mongoose, .env, JWT, etc.)*
+*(more entries added as we build — schemas, JWT, etc.)*
