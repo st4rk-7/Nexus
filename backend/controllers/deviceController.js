@@ -2,6 +2,52 @@
 // This file holds the logic for our device routes.
 
 import { Device } from "../models/Device.js";
+import { Firmware } from "../models/Firmware.js"; // We need this to check latest firmware
+
+// @desc    Check if a firmware update is available for a device
+// @route   POST /api/devices/check-update
+export const checkUpdate = async (req, res) => {
+  try {
+    const { name, currentFirmwareVersion } = req.body;
+
+    if (!name || !currentFirmwareVersion) {
+      return res.status(400).json({ error: "Please provide name and currentFirmwareVersion" });
+    }
+
+    // 1. Find the device to make sure it exists
+    const device = await Device.findOne({ name });
+    if (!device) {
+      return res.status(404).json({ error: "Device not found" });
+    }
+
+    // 2. Find the latest active firmware
+    // sort({ createdAt: -1 }) gets newest first
+    const latestFirmware = await Firmware.findOne({ isActive: true }).sort({ createdAt: -1 });
+
+    if (!latestFirmware) {
+      // No firmware uploaded at all yet
+      return res.status(200).json({ updateAvailable: false, message: "No firmware available" });
+    }
+
+    // 3. Compare versions (simple check: if it's different, assume it's an update)
+    if (latestFirmware.version !== currentFirmwareVersion) {
+      return res.status(200).json({
+        updateAvailable: true,
+        latestVersion: latestFirmware.version,
+        firmwareId: latestFirmware._id,
+        downloadUrl: `/api/firmware/${latestFirmware._id}/download`,
+        releaseNotes: latestFirmware.releaseNotes
+      });
+    }
+
+    // If versions match
+    res.status(200).json({ updateAvailable: false, message: "Device is up to date" });
+
+  } catch (error) {
+    console.error("Error checking update:", error);
+    res.status(500).json({ error: "Server error checking update" });
+  }
+};
 
 // @desc    Get all registered devices
 // @route   GET /api/devices

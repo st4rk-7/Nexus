@@ -56,3 +56,31 @@ export const getFirmwareVersions = async (req, res) => {
     res.status(500).json({ error: "Server error while fetching firmware" });
   }
 };
+
+// @desc    Download a specific firmware binary
+// @route   GET /api/firmware/:id/download
+export const downloadFirmware = async (req, res) => {
+  try {
+    const { id } = req.params; // Grabs the ':id' part from the URL
+
+    const firmware = await Firmware.findById(id);
+    if (!firmware) {
+      return res.status(404).json({ error: "Firmware not found" });
+    }
+
+    // Tell Express to serve the file.
+    // Express uses `path.resolve` to find the exact file on the hard drive.
+    res.download(path.resolve(firmware.filePath), (err) => {
+      if (err) {
+        console.error("Error downloading file:", err);
+        // If headers are already sent, we can't send a JSON error.
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Failed to download file" });
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error initiating download:", error);
+    res.status(500).json({ error: "Server error initiating download" });
+  }
+};

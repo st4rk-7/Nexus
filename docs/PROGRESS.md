@@ -27,34 +27,34 @@ code into models / routes / services (LO1).
 - [x] MongoDB Atlas connected (free tier)
 - [x] understand the folder structure
 
-### Phase 1 — Device registry  `[ ]`
+### Phase 1 — Device registry  `[x]`
 **Goal:** a device can register and be listed/tracked.
 **Maps to brief steps 1 & 4.**
 **Explain:** Mongoose schemas/models, Express routing, MVC separation, async/await.
 **Done when:**
-- [ ] Device model (Mongoose)
-- [ ] `POST /api/devices/register`
-- [ ] `GET /api/devices` (list + online/offline status)
-- [ ] tested with curl
+- [x] Device model (Mongoose)
+- [x] `POST /api/devices/register`
+- [x] `GET /api/devices` (list + online/offline status)
+- [x] tested with curl
 
-### Phase 2 — Firmware management  `[ ]`
+### Phase 2 — Firmware management  `[x]`
 **Goal:** an admin can upload a firmware version with metadata.
 **Maps to brief step 3.**
 **Explain:** file uploads (multer), storing metadata vs the binary, semantic versioning.
 **Done when:**
-- [ ] Firmware model
-- [ ] `POST /api/firmware` (upload: version, notes, file)
-- [ ] `GET /api/firmware` (list)
-- [ ] tested with curl
+- [x] Firmware model
+- [x] `POST /api/firmware` (upload: version, notes, file)
+- [x] `GET /api/firmware` (list)
+- [x] tested with curl
 
-### Phase 3 — The OTA core  `[ ]`
+### Phase 3 — The OTA core  `[x]`
 **Goal:** a device asks "is there a newer firmware for me?" and can download it.
 **This is the heart of the app. Maps to brief step 2.**
 **Explain:** REST resource design, version-comparison logic, status codes.
 **Done when:**
-- [ ] `POST /api/devices/check-update` (returns whether a newer version exists)
-- [ ] `GET /api/firmware/:id/download`
-- [ ] tested with curl
+- [x] `POST /api/devices/check-update` (returns whether a newer version exists)
+- [x] `GET /api/firmware/:id/download`
+- [x] tested with curl
 
 ### Phase 4 — Auth & security  `[ ]`
 **Goal:** only admins manage firmware; devices authenticate to check in.
@@ -116,9 +116,8 @@ code into models / routes / services (LO1).
   with a known password. Lesson: set DB credentials yourself, use only letters+numbers.
 
 ## Current state
-- **Phase 0 COMPLETE.** Backend runs on Bun, connects to MongoDB Atlas, `/health` works.
-- Next: Phase 1 — Device registry.
+- **Phase 3 COMPLETE.** Devices can check for updates and download the firmware binary.
+- Next: Phase 4 — Auth & security.
 
 ## Next action
-Phase 1: build the Device model (its data shape), then `POST /api/devices/register`
-so a device can register itself and be saved to the database.
+Phase 4: Build Admin model and JWT login so only admins can upload firmware.

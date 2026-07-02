@@ -5,7 +5,7 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { uploadFirmware, getFirmwareVersions } from "../controllers/firmwareController.js";
+import { uploadFirmware, getFirmwareVersions, downloadFirmware } from "../controllers/firmwareController.js";
 
 const router = express.Router();
 
@@ -34,5 +34,8 @@ const upload = multer({ storage });
 router.post("/", upload.single("file"), uploadFirmware);
 
 router.get("/", getFirmwareVersions);
+
+// Download a firmware file by ID
+router.get("/:id/download", downloadFirmware);
 
 export default router;

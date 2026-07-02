@@ -78,6 +78,13 @@ the database. Passwords with symbols (`@ / : #`) break it — use letters+number
 **`bunfig.toml` / preload** — Bun's config file. `preload` runs a file before our app.
 We use it to load `bun-patch.js`, a shim that fixes a missing Bun feature the DB needs.
 
+## Firmware & Uploads
+
+**Multer** — a middleware for Express that handles file uploads. Express `express.json()`
+can only read text (JSON). When uploading files, the request type is `multipart/form-data`.
+Multer catches the file, saves it to a folder (like `uploads/`), and adds `req.file`
+so our code knows where to find it.
+
 ---
 
-*(more entries added as we build — schemas, JWT, etc.)*
+*(more entries added as we build — JWT, etc.)*
