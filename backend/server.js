@@ -9,6 +9,7 @@ import express from "express";
 import { connectDB } from "./config/db.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import firmwareRoutes from "./routes/firmwareRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
 
 // `express()` creates our application — the thing that listens for HTTP
 // requests and decides how to respond to each one.
@@ -26,6 +27,9 @@ app.use("/api/devices", deviceRoutes);
 
 // Plug in the firmware routes.
 app.use("/api/firmware", firmwareRoutes);
+
+// Plug in the admin auth routes (register + login).
+app.use("/api/auth", authRoutes);
 
 // Health check: a trivial endpoint to confirm the server is alive.
 // Visit http://localhost:3000/health and you should get this JSON back.

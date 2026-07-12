@@ -56,16 +56,16 @@ code into models / routes / services (LO1).
 - [x] `GET /api/firmware/:id/download`
 - [x] tested with curl
 
-### Phase 4 — Auth & security  `[ ]`
+### Phase 4 — Auth & security  `[x]`
 **Goal:** only admins manage firmware; devices authenticate to check in.
 **Maps to brief step 5. This is LO3 — heavily graded.**
 **Explain:** authentication vs authorization, JWT, RBAC, device API keys, input validation.
 **Done when:**
-- [ ] Admin model + `POST /api/auth/login` (JWT)
-- [ ] auth middleware (protect admin routes)
-- [ ] device API-key auth on check-in
-- [ ] input validation on all routes
-- [ ] unauthorized requests rejected (tested)
+- [x] Admin model + `POST /api/auth/login` (JWT)
+- [x] auth middleware (protect admin routes)
+- [x] device API-key auth on check-in
+- [x] input validation on all routes
+- [x] unauthorized requests rejected (tested)
 
 ### Phase 5 — Admin dashboard (React)  `[ ]`
 **Goal:** admin can log in, upload firmware, and see devices + status.
@@ -114,10 +114,19 @@ code into models / routes / services (LO1).
   wired via `bunfig.toml`). Delete the shim once Bun implements it. (Node runs it fine without.)
 - **DB user gotcha:** Atlas auto-generated user failed auth; created a fresh user `nexusadmin`
   with a known password. Lesson: set DB credentials yourself, use only letters+numbers.
+- **Bun install hang (Phase 4):** `bun add bcryptjs jsonwebtoken` hung forever at "Resolving
+  dependencies" (Bun resolver stall; registry itself was reachable via curl). Worked around
+  with `npm install --prefix backend bcryptjs jsonwebtoken` — same node_modules, Bun runs
+  them fine at runtime. NOTE: plain `npm install` walked UP and polluted ~/ with a
+  package.json + node_modules; always use `--prefix <dir>` (or run inside the dir). Cleaned up.
+- **Security model:** admins = bcrypt-hashed passwords + JWT (Authorization: Bearer). Devices
+  = per-device random apiKey (x-api-key header), stored select:false so it never leaks on reads.
 
 ## Current state
-- **Phase 3 COMPLETE.** Devices can check for updates and download the firmware binary.
-- Next: Phase 4 — Auth & security.
+- **Phase 4 COMPLETE.** Admin JWT login + bcrypt password hashing; firmware upload
+  is admin-only (protect middleware); devices authenticate with a per-device apiKey
+  on check-update. All auth paths tested (no/valid/forged credentials).
+- Next: Phase 5 — Admin dashboard (React).
 
 ## Next action
-Phase 4: Build Admin model and JWT login so only admins can upload firmware.
+Phase 5: Start the React frontend — a login page that hits `/api/auth/login`.

@@ -6,6 +6,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { uploadFirmware, getFirmwareVersions, downloadFirmware } from "../controllers/firmwareController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -29,9 +30,9 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Routes
-// We insert `upload.single("file")` as middleware. 
-// It looks for a field named "file" in the incoming form data, saves it, and attaches info to `req.file`.
-router.post("/", upload.single("file"), uploadFirmware);
+// Uploading firmware is admin-only. `protect` runs first (checks the JWT badge),
+// then multer saves the file, then the controller stores it.
+router.post("/", protect, upload.single("file"), uploadFirmware);
 
 router.get("/", getFirmwareVersions);
 

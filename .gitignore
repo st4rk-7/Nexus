@@ -1,5 +1,10 @@
-# Dependencies (regenerable with `npm install` — never commit)
+# Dependencies (regenerable with `bun install` — never commit)
 node_modules/
+
+# npm lockfile — this is a Bun project (bun.lock is the tracked one).
+# package-lock.json only exists because we used npm to sidestep a Bun
+# install hang; it's a byproduct, not the source of truth (package.json is).
+package-lock.json
 
 # Secrets & environment (NEVER commit — contains DB password, JWT secret)
 .env

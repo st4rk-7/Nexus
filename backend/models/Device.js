@@ -4,6 +4,7 @@
 // and doesn't store garbage data.
 
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 const deviceSchema = new mongoose.Schema(
   {
@@ -18,6 +19,18 @@ const deviceSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
+    },
+    // A secret key this device uses to prove who it is when checking in.
+    // Auto-generated at creation: 32 random bytes as a hex string.
+    // Think of it as the device's password.
+    // `select: false` = hidden by default, so listing devices never leaks
+    // everyone's keys. We ask for it explicitly only when we need to verify.
+    apiKey: {
+      type: String,
+      required: true,
+      unique: true,
+      select: false,
+      default: () => crypto.randomBytes(32).toString("hex"),
     },
     // The current firmware version running on the device.
     // When a device first registers, it starts at "1.0.0".

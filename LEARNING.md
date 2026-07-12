@@ -85,6 +85,34 @@ can only read text (JSON). When uploading files, the request type is `multipart/
 Multer catches the file, saves it to a folder (like `uploads/`), and adds `req.file`
 so our code knows where to find it.
 
+## Auth & security (LO3)
+
+**Authentication vs authorization** — *authentication* = "who are you?" (login).
+*authorization* = "are you allowed to do this?" (only admins may upload). Two different questions.
+
+**Hashing (bcrypt)** — we never store real passwords. bcrypt scrambles a password into a
+one-way "hash" (`$2b$10$...`). You can't un-scramble it. To check a login, we hash what
+the user typed and compare hashes. If the DB leaks, the real passwords aren't in it.
+A "salt" is random data mixed in so two identical passwords get different hashes.
+
+**JWT (JSON Web Token)** — after a correct login the server hands back a signed "badge."
+The client sends it on later requests as a header: `Authorization: Bearer <token>`.
+The server checks the signature (using `JWT_SECRET`) to trust it — no DB lookup of a
+password each time. Tokens expire (we use 1 day) so a stolen one doesn't last forever.
+
+**Middleware as a gate** — `protect` runs *before* a route. It reads the token, verifies it,
+and either calls `next()` (continue) or replies `401`. Same idea as `express.json()`, but
+for security. `deviceAuth` is the device version: it checks an `x-api-key` header.
+
+**Device API key** — each device gets a long random secret (`crypto.randomBytes`) at
+registration — its "password." It sends it as `x-api-key` to check in. We mark the field
+`select: false` so it's hidden on normal reads (listing devices never leaks keys); we only
+fetch it with `.select("+apiKey")` when verifying. Shown to the owner once, at registration.
+
+**401 vs 403** — `401 Unauthorized` = "I don't know who you are / bad credentials."
+`403 Forbidden` = "I know who you are, but you're not allowed." We use vague, identical
+login errors ("Invalid username or password") so attackers can't tell which usernames exist.
+
 ---
 
-*(more entries added as we build — JWT, etc.)*
+*(more entries added as we build — React, etc.)*

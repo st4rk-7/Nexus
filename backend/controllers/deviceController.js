@@ -6,22 +6,19 @@ import { Firmware } from "../models/Firmware.js"; // We need this to check lates
 
 // @desc    Check if a firmware update is available for a device
 // @route   POST /api/devices/check-update
+// @access  Device (requires valid x-api-key — set by deviceAuth middleware)
 export const checkUpdate = async (req, res) => {
   try {
-    const { name, currentFirmwareVersion } = req.body;
+    // The device is already identified by the deviceAuth middleware — we trust
+    // req.device, NOT a name in the body (a name could be faked; the key can't).
+    const device = req.device;
 
-    if (!name || !currentFirmwareVersion) {
-      return res.status(400).json({ error: "Please provide name and currentFirmwareVersion" });
-    }
+    // The device tells us what version it's currently running. Fall back to
+    // whatever we have on record if it doesn't send one.
+    const currentFirmwareVersion =
+      req.body.currentFirmwareVersion || device.currentFirmwareVersion;
 
-    // 1. Find the device to make sure it exists
-    const device = await Device.findOne({ name });
-    if (!device) {
-      return res.status(404).json({ error: "Device not found" });
-    }
-
-    // 2. Find the latest active firmware
-    // sort({ createdAt: -1 }) gets newest first
+    // Find the latest active firmware. sort({ createdAt: -1 }) gets newest first.
     const latestFirmware = await Firmware.findOne({ isActive: true }).sort({ createdAt: -1 });
 
     if (!latestFirmware) {
@@ -29,7 +26,7 @@ export const checkUpdate = async (req, res) => {
       return res.status(200).json({ updateAvailable: false, message: "No firmware available" });
     }
 
-    // 3. Compare versions (simple check: if it's different, assume it's an update)
+    // Compare versions (simple check: if it's different, assume it's an update)
     if (latestFirmware.version !== currentFirmwareVersion) {
       return res.status(200).json({
         updateAvailable: true,
@@ -96,9 +93,18 @@ export const registerDevice = async (req, res) => {
     });
 
     // 5. Send success response back to the client (status 201 = Created)
+    // We return the apiKey ONCE here — the device must save it now, because
+    // it's hidden (select:false) on every future read. Like a password shown once.
     res.status(201).json({
-      message: "Device registered successfully",
-      device: newDevice,
+      message: "Device registered successfully. Save your apiKey — it won't be shown again.",
+      device: {
+        _id: newDevice._id,
+        name: newDevice.name,
+        type: newDevice.type,
+        currentFirmwareVersion: newDevice.currentFirmwareVersion,
+        status: newDevice.status,
+      },
+      apiKey: newDevice.apiKey,
     });
 
   } catch (error) {
