@@ -145,6 +145,20 @@ browser it all looks like one origin. No CORS error, no backend change needed.
 **localStorage** — a small key/value store in the browser that survives refreshes. We save the
 JWT token there so reloading the page doesn't log you out.
 
+**`useEffect`** — runs code *after* a component appears on screen. With an empty dependency
+array `[]` it runs ONCE on mount — the standard place to fetch data. `DeviceList` uses it to
+call `GET /api/devices` when the dashboard opens.
+
+**`.map()` + `key`** — to render a list, we `.map()` each data item to a JSX element (e.g. a
+`<tr>` per device). React needs a unique `key` prop per item (we use the DB `_id`) so it can
+track which rows changed efficiently.
+
+**Design tokens (CSS variables)** — colors/spacing defined once in `:root` as `--name`, reused
+everywhere via `var(--name)`. Change the theme in one place. We define ours in `index.css`.
+
+**OKLCH color** — `oklch(Lightness Chroma Hue)`. Lightness 0=black, 1=white. Perceptually
+uniform (equal lightness steps look equally bright), unlike hex/hsl. Used for all our colors.
+
 ---
 
 *(more entries added as we build — deployment, etc.)*

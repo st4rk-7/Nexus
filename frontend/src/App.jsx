@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import Login from "./Login.jsx";
+import DeviceList from "./DeviceList.jsx";
 
 function App() {
   // We keep the JWT token in state. Start by reading any saved token from
@@ -35,11 +36,13 @@ function App() {
         <Login onLogin={handleLogin} />
       ) : (
         <div>
-          <p>
-            Logged in as <strong>{username}</strong>{" "}
-            <button onClick={handleLogout}>Log out</button>
+          <p style={{ color: "var(--text-muted)" }}>
+            Logged in as <strong style={{ color: "var(--text)" }}>{username}</strong>{" "}
+            <button className="secondary" onClick={handleLogout}>Log out</button>
           </p>
-          <p>Dashboard (device list + firmware upload) coming next.</p>
+
+          {/* The device list fetches and shows all registered devices. */}
+          <DeviceList />
         </div>
       )}
     </div>

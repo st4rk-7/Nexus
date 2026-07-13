@@ -1,0 +1,138 @@
+/* index.css — the app's base styles + design tokens.
+   Colors are in OKLCH: oklch(Lightness Chroma Hue). Lightness 0=black, 1=white.
+   Keeping tokens in one place (CSS variables) means we theme the whole app by
+   editing here, not every component. */
+
+:root {
+  /* --- Neutrals (surfaces + text) --- */
+  --bg: oklch(0.985 0.002 250);          /* page background — near white */
+  --surface: oklch(1 0 0);                /* cards — pure white */
+  --border: oklch(0.92 0.004 250);        /* hairline borders */
+  --text: oklch(0.25 0.01 250);           /* primary text — dark, easy to read */
+  --text-muted: oklch(0.55 0.01 250);     /* secondary text — labels, hints */
+
+  /* --- Brand + status --- */
+  --brand: oklch(0.55 0.17 260);          /* buttons, links — indigo */
+  --brand-hover: oklch(0.48 0.17 260);
+  --online: oklch(0.62 0.15 150);         /* green — device online */
+  --online-bg: oklch(0.95 0.04 150);
+  --offline: oklch(0.6 0.02 250);         /* gray — device offline */
+  --offline-bg: oklch(0.94 0.004 250);
+  --danger: oklch(0.55 0.2 25);           /* red — errors */
+
+  /* --- Shape + depth --- */
+  --radius: 12px;                          /* outer radius of cards */
+  --radius-sm: 8px;                        /* inner elements (badges, inputs) */
+  /* Layered shadow reads as natural depth (skill: shadows over borders). */
+  --shadow: 0 1px 2px oklch(0.25 0.01 250 / 0.04),
+            0 2px 8px oklch(0.25 0.01 250 / 0.06);
+
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Crisper text rendering on macOS/Safari. */
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+h1, h2, h3 { line-height: 1.2; margin: 0 0 0.5rem; }
+
+/* --- Buttons --- */
+button {
+  font: inherit;
+  font-weight: 500;
+  color: white;
+  background: var(--brand);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  /* Only animate what changes — never `transition: all`. */
+  transition-property: background-color, scale;
+  transition-duration: 120ms;
+}
+button:hover { background: var(--brand-hover); }
+button:active { scale: 0.97; }          /* tactile press feedback */
+button:disabled { opacity: 0.6; cursor: default; scale: 1; }
+
+/* A quiet, secondary button (e.g. Log out). */
+button.secondary {
+  color: var(--text);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+button.secondary:hover { background: var(--bg); }
+
+/* --- Inputs --- */
+input {
+  font: inherit;
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-top: 0.25rem;
+}
+input:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+label { font-size: 0.9rem; color: var(--text-muted); }
+
+/* --- Reusable card surface --- */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+}
+
+/* --- Device table --- */
+.device-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.device-table th {
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+.device-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+}
+/* Last row shouldn't carry a divider line. */
+.device-table tbody tr:last-child td { border-bottom: none; }
+
+/* Monospaced, tabular figures so version numbers align vertically. */
+.mono {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Status badge --- */
+.badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px; /* pill */
+}
+.badge-online  { color: var(--online);  background: var(--online-bg); }
+.badge-offline { color: var(--offline); background: var(--offline-bg); }
