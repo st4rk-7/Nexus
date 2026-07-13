@@ -77,12 +77,12 @@ code into models / routes / services (LO1).
 - [x] firmware upload form (sends JWT + file via FormData)
 - [x] talks to the real backend (all three features verified end-to-end)
 
-### Phase 6 — Simulated device (full OTA loop)  `[ ]`
+### Phase 6 — Simulated device (full OTA loop)  `[x]`
 **Goal:** a script proves the whole loop: register → check update → download.
 **Maps to brief step 7. This is your live demo for the viva.**
 **Done when:**
-- [ ] device-simulator script
-- [ ] runs the full loop end-to-end against the backend
+- [x] device-simulator script
+- [x] runs the full loop end-to-end against the backend
 
 ### Phase 7 — Deploy to cloud  `[ ]`
 **Goal:** the app runs deployed, not just on localhost.
@@ -127,10 +127,9 @@ code into models / routes / services (LO1).
   is admin-only (protect middleware); devices authenticate with a per-device apiKey
   on check-update. All auth paths tested (no/valid/forged credentials).
 ## Current state
-- **Phase 5 COMPLETE.** React dashboard: login, device list (online/offline badges),
-  firmware upload (admin-only, JWT-authenticated). All verified end-to-end through proxy.
-- Next: Phase 6 — Simulated device script (the live demo).
+- **Phase 6 COMPLETE.** Simulator script (`bun simulator/device.js`) proves the full
+  OTA loop: register → check update → download. Works end-to-end against the live backend.
+- Next: Phase 7 — Deploy to cloud.
 
 ## Next action
-Phase 6: write a device-simulator script that proves the full OTA loop:
-register → check update → download firmware.
+Phase 7: Deploy backend to Render, frontend to Vercel, Atlas already in use.
