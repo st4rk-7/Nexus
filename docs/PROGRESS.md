@@ -67,15 +67,15 @@ code into models / routes / services (LO1).
 - [x] input validation on all routes
 - [x] unauthorized requests rejected (tested)
 
-### Phase 5 — Admin dashboard (React)  `[ ]`
+### Phase 5 — Admin dashboard (React)  `[~]`
 **Goal:** admin can log in, upload firmware, and see devices + status.
 **Maps to brief step 6.**
 **Explain:** React components/state, calling a REST API from the frontend, JWT in the browser.
 **Done when:**
-- [ ] login page
+- [x] login page (JWT stored, tested through Vite proxy)
 - [ ] device list view (status)
 - [ ] firmware upload form
-- [ ] talks to the real backend
+- [x] talks to the real backend (login verified end-to-end)
 
 ### Phase 6 — Simulated device (full OTA loop)  `[ ]`
 **Goal:** a script proves the whole loop: register → check update → download.
@@ -126,7 +126,10 @@ code into models / routes / services (LO1).
 - **Phase 4 COMPLETE.** Admin JWT login + bcrypt password hashing; firmware upload
   is admin-only (protect middleware); devices authenticate with a per-device apiKey
   on check-update. All auth paths tested (no/valid/forged credentials).
-- Next: Phase 5 — Admin dashboard (React).
+- **Phase 5 IN PROGRESS.** React frontend scaffolded with Vite (frontend/, runs :5173).
+  Login page works end-to-end through the Vite proxy; JWT saved in localStorage.
+  NOTE: Vite bound to 127.0.0.1 (plain `localhost` resolved to IPv6 and hung) — open
+  the app at http://127.0.0.1:5173. Frontend installed via npm (bun install hangs).
 
 ## Next action
-Phase 5: Start the React frontend — a login page that hits `/api/auth/login`.
+Phase 5 cont.: build the device-list view (GET /api/devices) shown after login.

@@ -113,6 +113,38 @@ fetch it with `.select("+apiKey")` when verifying. Shown to the owner once, at r
 `403 Forbidden` = "I know who you are, but you're not allowed." We use vague, identical
 login errors ("Invalid username or password") so attackers can't tell which usernames exist.
 
+## Frontend (React) — Phase 5
+
+**Frontend vs backend** — the *backend* (Express, :3000) has no screen; you talked to it
+with curl. The *frontend* (React, :5173) is the actual webpage an admin sees. It's a
+SEPARATE app in its own folder. When the admin clicks a button, React makes the same HTTP
+call curl did — just triggered by the UI.
+
+**Component** — a function that returns JSX (HTML-in-JS) describing what to show. `<App />`,
+`<Login />` are components. You nest them like HTML tags to build the page.
+
+**JSX** — HTML-looking syntax inside JavaScript. Vite compiles it to real JS before the
+browser sees it. `{expression}` inside JSX inserts a JS value.
+
+**State (`useState`)** — React "remembers" values between redraws (what you typed, the token).
+`const [x, setX] = useState(initial)`. Calling `setX(...)` updates it AND redraws the screen
+automatically. This is the core idea of React: UI = a function of state.
+
+**Props** — inputs passed into a component, like function arguments. We pass `onLogin` into
+`<Login onLogin={...} />` so the child can tell the parent "login succeeded, here's the token."
+
+**`fetch`** — the browser's built-in HTTP call (curl from JavaScript). `await fetch(url, {...})`
+returns a response; `res.ok` is false for 4xx/5xx; `await res.json()` reads the body.
+
+**Vite** — the tool that runs the React dev server (:5173) with instant auto-refresh on save.
+
+**Proxy (CORS)** — a browser blocks a page on one port from calling another (that's CORS).
+Vite's `proxy` config forwards `/api/...` from :5173 to the backend on :3000, so to the
+browser it all looks like one origin. No CORS error, no backend change needed.
+
+**localStorage** — a small key/value store in the browser that survives refreshes. We save the
+JWT token there so reloading the page doesn't log you out.
+
 ---
 
-*(more entries added as we build — React, etc.)*
+*(more entries added as we build — deployment, etc.)*
