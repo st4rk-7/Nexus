@@ -5,6 +5,7 @@
 import { useState } from "react";
 import Login from "./Login.jsx";
 import DeviceList from "./DeviceList.jsx";
+import FirmwareUpload from "./FirmwareUpload.jsx";
 
 function App() {
   // We keep the JWT token in state. Start by reading any saved token from
@@ -40,6 +41,9 @@ function App() {
             Logged in as <strong style={{ color: "var(--text)" }}>{username}</strong>{" "}
             <button className="secondary" onClick={handleLogout}>Log out</button>
           </p>
+
+          {/* Admin-only: upload a new firmware version (sends the JWT token). */}
+          <FirmwareUpload token={token} />
 
           {/* The device list fetches and shows all registered devices. */}
           <DeviceList />

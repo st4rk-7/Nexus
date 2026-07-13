@@ -67,15 +67,15 @@ code into models / routes / services (LO1).
 - [x] input validation on all routes
 - [x] unauthorized requests rejected (tested)
 
-### Phase 5 — Admin dashboard (React)  `[~]`
+### Phase 5 — Admin dashboard (React)  `[x]`
 **Goal:** admin can log in, upload firmware, and see devices + status.
 **Maps to brief step 6.**
 **Explain:** React components/state, calling a REST API from the frontend, JWT in the browser.
 **Done when:**
 - [x] login page (JWT stored, tested through Vite proxy)
 - [x] device list view (status) — table + colored online/offline badges
-- [ ] firmware upload form
-- [x] talks to the real backend (login verified end-to-end)
+- [x] firmware upload form (sends JWT + file via FormData)
+- [x] talks to the real backend (all three features verified end-to-end)
 
 ### Phase 6 — Simulated device (full OTA loop)  `[ ]`
 **Goal:** a script proves the whole loop: register → check update → download.
@@ -126,12 +126,11 @@ code into models / routes / services (LO1).
 - **Phase 4 COMPLETE.** Admin JWT login + bcrypt password hashing; firmware upload
   is admin-only (protect middleware); devices authenticate with a per-device apiKey
   on check-update. All auth paths tested (no/valid/forged credentials).
-- **Phase 5 IN PROGRESS.** React frontend (Vite, frontend/, runs :5173). Login + device
-  list both work end-to-end through the proxy. Plain-CSS design system in index.css using
-  OKLCH tokens (added the jakubkrehel better-ui/colors/typography skills). Device table has
-  colored online/offline badges. Only the firmware-upload form remains for Phase 5.
-  NOTE: Vite bound to 127.0.0.1 (plain `localhost` resolved to IPv6 and hung) — open
-  the app at http://127.0.0.1:5173. Frontend installed via npm (bun install hangs).
+## Current state
+- **Phase 5 COMPLETE.** React dashboard: login, device list (online/offline badges),
+  firmware upload (admin-only, JWT-authenticated). All verified end-to-end through proxy.
+- Next: Phase 6 — Simulated device script (the live demo).
 
 ## Next action
-Phase 5 cont.: build the firmware-upload form (admin-only, sends JWT + file to POST /api/firmware).
+Phase 6: write a device-simulator script that proves the full OTA loop:
+register → check update → download firmware.
