@@ -161,4 +161,4 @@ uniform (equal lightness steps look equally bright), unlike hex/hsl. Used for al
 
 ---
 
-*(more entries added as we build — deployment, etc.)*
+*(more entries added as we build.)*

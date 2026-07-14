@@ -84,25 +84,17 @@ code into models / routes / services (LO1).
 - [x] device-simulator script
 - [x] runs the full loop end-to-end against the backend
 
-### Phase 7 — Deploy to cloud  `[ ]`
-**Goal:** the app runs deployed, not just on localhost.
-**Maps to brief step 8. Bonus per the brief ("hosting is better but not required").**
-**Done when:**
-- [ ] backend on Render
-- [ ] frontend on Vercel
-- [ ] Atlas as the DB
-
-### Phase 8 — Design writeup & viva prep  `[ ]`
+### Phase 7 — Design writeup & viva prep  `[~]`
 **Goal:** be able to justify every design decision (LO4) and pass the evaluation.
 **Done when:**
-- [ ] short doc: why this architecture, perf/usability/scalability choices
+- [x] study guide explains the architecture and current limitations
 - [ ] can explain every file in the repo
 
 ---
 
 ## Decisions log (the "why" — for LO4 / viva)
 - **Stack:** MERN (allowed by module; brief mandates it).
-- **DB:** MongoDB Atlas from day one — it's also the deploy target, so no migration later.
+- **DB:** MongoDB Atlas from day one for persistent device and release records.
 - **Runtime/package manager:** Bun (not npm/node) — faster, all-in-one, simpler for a learner.
 - **Plain JS, no TypeScript** — keep the learning load on web concepts, not a type system.
 - **No ESLint/Docker/Jest yet** — out of scope for a learner; brief tests via curl/Postman.
@@ -126,10 +118,10 @@ code into models / routes / services (LO1).
 - **Phase 4 COMPLETE.** Admin JWT login + bcrypt password hashing; firmware upload
   is admin-only (protect middleware); devices authenticate with a per-device apiKey
   on check-update. All auth paths tested (no/valid/forged credentials).
-## Current state
 - **Phase 6 COMPLETE.** Simulator script (`bun simulator/device.js`) proves the full
   OTA loop: register → check update → download. Works end-to-end against the live backend.
-- Next: Phase 7 — Deploy to cloud.
+- **Phase 7 IN PROGRESS.** The study guide is available for review and viva preparation.
 
 ## Next action
-Phase 7: Deploy backend to Render, frontend to Vercel, Atlas already in use.
+Read the study guide, run the local application, and check each explanation
+against the code and simulator output.

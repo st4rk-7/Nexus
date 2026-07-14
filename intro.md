@@ -17,7 +17,6 @@ safely and with a record of what's deployed where.
 3. A device can ask "is there a newer firmware for me?" and get the right answer + download link.
 4. An admin can see all devices, their current firmware, and online/offline status on a dashboard.
 5. Access is secured — only authorized admins manage firmware; devices authenticate to check in.
-6. The whole thing is deployable to the cloud, not just localhost.
 
 ## Scope
 IN (MVP):
@@ -35,7 +34,6 @@ OUT (for now):
 - A simulated device (a script) can: register → check for update → download firmware.
 - Admin can log in, upload firmware, and watch a device pick it up.
 - Unauthorized requests are rejected.
-- App runs deployed (MongoDB Atlas + Render/Vercel), not only locally.
 
 ## Evaluation criteria (graded — these are what's marked)
 - LO1: Correct use of components/architecture (clear separation: models, routes, services).
@@ -47,7 +45,6 @@ OUT (for now):
 Backend: Node + Express + MongoDB (Mongoose)
 Frontend: React
 Auth: JWT (admins) + device API keys
-Deploy: MongoDB Atlas + Render (backend) + Vercel (frontend)
 
 ## Build order (achieve in this sequence)
 1. [DONE] POST /api/devices/register
@@ -57,6 +54,5 @@ Deploy: MongoDB Atlas + Render (backend) + Vercel (frontend)
 5. Auth layer (JWT admins, device keys)
 6. React dashboard
 7. Simulated-device test script (proves the full OTA loop)
-8. Deploy to cloud
 
 Rule: one step at a time, test with curl before moving on, working over complete.
