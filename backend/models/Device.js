@@ -11,14 +11,19 @@ const deviceSchema = new mongoose.Schema(
     // The human-readable name of the device (e.g., "sensor-01")
     name: {
       type: String,
-      required: true,
+      required: [true, "Name is required"],
       unique: true, // No two devices can have the same name
       trim: true,
+      minlength: [2, "Name must be at least 2 characters"],
+      maxlength: [50, "Name must be at most 50 characters"],
+      match: [/^[A-Za-z0-9 _.-]+$/, "Name may only contain letters, numbers, spaces, - _ ."],
     },
-    // What kind of device it is
+    // What kind of device it is (e.g., "ESP32", "temperature-sensor")
     type: {
       type: String,
-      required: true,
+      required: [true, "Type is required"],
+      trim: true,
+      maxlength: [40, "Type must be at most 40 characters"],
     },
     // A secret key this device uses to prove who it is when checking in.
     // Auto-generated at creation: 32 random bytes as a hex string.
@@ -37,11 +42,14 @@ const deviceSchema = new mongoose.Schema(
     currentFirmwareVersion: {
       type: String,
       default: "1.0.0",
+      trim: true,
+      match: [/^\d+\.\d+\.\d+$/, "Firmware version must look like 1.2.0"],
     },
     // Whether the device is currently "online" or "offline"
     status: {
       type: String,
-      enum: ["online", "offline"], // Only these two words are allowed
+      // Only these two words are allowed
+      enum: { values: ["online", "offline"], message: "Status must be online or offline" },
       default: "online",
     },
   },

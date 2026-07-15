@@ -45,8 +45,8 @@ function App() {
           {/* Admin-only: upload a new firmware version (sends the JWT token). */}
           <FirmwareUpload token={token} />
 
-          {/* The device list fetches and shows all registered devices. */}
-          <DeviceList />
+          {/* Devices: list, search, add, view, edit, delete (edit/delete need the token). */}
+          <DeviceList token={token} />
         </div>
       )}
     </div>

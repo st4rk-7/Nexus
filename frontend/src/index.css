@@ -70,8 +70,21 @@ button.secondary {
 }
 button.secondary:hover { background: var(--bg); }
 
+/* Destructive action (Delete). */
+button.danger { background: var(--danger); }
+button.danger:hover { background: oklch(0.48 0.2 25); }
+
+/* A button that looks like a link (device names, "back"). */
+button.link {
+  color: var(--brand);
+  background: none;
+  padding: 0;
+  text-align: left;
+}
+button.link:hover { background: none; text-decoration: underline; }
+
 /* --- Inputs --- */
-input {
+input, select {
   font: inherit;
   width: 100%;
   padding: 0.5rem 0.65rem;
@@ -81,7 +94,7 @@ input {
   border-radius: var(--radius-sm);
   margin-top: 0.25rem;
 }
-input:focus {
+input:focus, select:focus {
   outline: 2px solid var(--brand);
   outline-offset: 1px;
   border-color: transparent;
@@ -136,3 +149,45 @@ label { font-size: 0.9rem; color: var(--text-muted); }
 }
 .badge-online  { color: var(--online);  background: var(--online-bg); }
 .badge-offline { color: var(--offline); background: var(--offline-bg); }
+
+/* Native validation feedback once the user has typed something invalid. */
+input:user-invalid { border-color: var(--danger); }
+
+/* --- Layout helpers --- */
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+/* Search / filter / sort controls: side by side, wrapping on small screens. */
+.toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
+.toolbar > label { flex: 1 1 10rem; }
+
+.form-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+
+/* Lets the table scroll sideways on phones instead of breaking the page. */
+.table-wrap { overflow-x: auto; }
+
+/* Success message, e.g. after creating or deleting a device. */
+.notice {
+  color: var(--online);
+  background: var(--online-bg);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  overflow-wrap: anywhere;   /* long API keys wrap instead of overflowing */
+}
+
+/* Detail view: label / value pairs in two columns. */
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.5rem 1.5rem;
+  margin: 1rem 0;
+}
+.details dt { color: var(--text-muted); }
+.details dd { margin: 0; overflow-wrap: anywhere; }
