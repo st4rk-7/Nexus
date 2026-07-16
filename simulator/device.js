@@ -3,7 +3,7 @@
 // Usage:  bun simulator/device.js
 //
 // This is the script you demo at the viva. It proves the whole system works
-// end-to-end: register → check update → download firmware.
+// end-to-end: register → check update → download firmware → report install.
 
 const BASE = process.env.API_URL || "http://localhost:3000";
 const DEVICE_NAME = `sim-device-${Date.now()}`; // unique name each run
@@ -62,6 +62,18 @@ async function main() {
   const blob = await dlRes.arrayBuffer();
   const sizeKB = (blob.byteLength / 1024).toFixed(1);
   console.log(`   ✅ Downloaded ${sizeKB} KB.\n`);
+
+  // ── Step 4: Report the install back to the server ─────────
+  console.log("4. Reporting install...");
+  const report = await api("/api/devices/report-update", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": apiKey,
+    },
+    body: JSON.stringify({ firmwareId: update.firmwareId }),
+  });
+  console.log(`   ✅ ${report.message}\n`);
 
   // ── Done ──────────────────────────────────────────────────
   console.log("╔══════════════════════════════════════════════╗");

@@ -32,6 +32,7 @@ export const uploadFirmware = async (req, res) => {
       version,
       releaseNotes,
       filePath: req.file.path,
+      uploadedBy: req.admin._id, // set by the `protect` middleware
     });
 
     res.status(201).json({
@@ -49,7 +50,10 @@ export const uploadFirmware = async (req, res) => {
 export const getFirmwareVersions = async (req, res) => {
   try {
     // Sort descending by creation date so newest is first
-    const firmwares = await Firmware.find({}).sort({ createdAt: -1 });
+    // populate() swaps the uploadedBy id for the admin's username
+    const firmwares = await Firmware.find({})
+      .sort({ createdAt: -1 })
+      .populate("uploadedBy", "username");
     res.status(200).json({ count: firmwares.length, firmwares });
   } catch (error) {
     console.error("Error fetching firmware:", error);

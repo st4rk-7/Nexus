@@ -26,7 +26,12 @@ const firmwareSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
-    }
+    },
+    // The admin who uploaded it (foreign key -> admins._id)
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Admin",
+    },
   },
   {
     timestamps: true,

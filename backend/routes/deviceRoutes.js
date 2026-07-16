@@ -9,6 +9,7 @@ import {
   updateDevice,
   deleteDevice,
   checkUpdate,
+  reportUpdate,
 } from "../controllers/deviceController.js";
 import { deviceAuth } from "../middleware/deviceAuthMiddleware.js";
 import { protect } from "../middleware/authMiddleware.js";
@@ -25,6 +26,9 @@ router.post("/register", registerDevice);
 // POST /check-update — device asks if there is a newer firmware.
 // `deviceAuth` runs first: the device must send a valid x-api-key header.
 router.post("/check-update", deviceAuth, checkUpdate);
+
+// POST /report-update — device confirms it installed a firmware version
+router.post("/report-update", deviceAuth, reportUpdate);
 
 // GET /:id — one device's details
 router.get("/:id", getDeviceById);

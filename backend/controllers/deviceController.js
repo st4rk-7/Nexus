@@ -3,6 +3,7 @@
 
 import { Device } from "../models/Device.js";
 import { Firmware } from "../models/Firmware.js"; // We need this to check latest firmware
+import { UpdateLog } from "../models/UpdateLog.js";
 
 // Turns database errors into clear 4xx responses instead of a generic 500.
 function sendError(res, error, fallbackMessage) {
@@ -13,7 +14,7 @@ function sendError(res, error, fallbackMessage) {
   }
   // A value had the wrong type, e.g. "/api/devices/abc" is not a valid id
   if (error.name === "CastError") {
-    const message = error.path === "_id" ? "Invalid device id" : `Invalid value for ${error.path}`;
+    const message = error.path === "_id" ? "Invalid id" : `Invalid value for ${error.path}`;
     return res.status(400).json({ error: message });
   }
   // 11000 = MongoDB's "duplicate key" error (the unique name rule)
@@ -111,7 +112,11 @@ export const getDeviceById = async (req, res) => {
     if (!device) {
       return res.status(404).json({ error: "Device not found" });
     }
-    res.status(200).json({ device });
+    // The device's install history, newest first, with each firmware's version
+    const updates = await UpdateLog.find({ device: device._id })
+      .sort({ createdAt: -1 })
+      .populate("firmware", "version");
+    res.status(200).json({ device, updates });
   } catch (error) {
     sendError(res, error, "Server error while fetching device");
   }
@@ -151,6 +156,8 @@ export const deleteDevice = async (req, res) => {
     if (!device) {
       return res.status(404).json({ error: "Device not found" });
     }
+    // Remove its update history too, so no log points at a missing device
+    await UpdateLog.deleteMany({ device: device._id });
     res.status(200).json({ message: `Device "${device.name}" deleted` });
   } catch (error) {
     sendError(res, error, "Server error while deleting device");
@@ -193,5 +200,34 @@ export const registerDevice = async (req, res) => {
   } catch (error) {
     // Bad input -> 400/409; anything else -> 500 so the server doesn't die.
     sendError(res, error, "Server error during registration");
+  }
+};
+
+// @desc    Device reports that it installed a firmware update
+// @route   POST /api/devices/report-update   body: { firmwareId }
+// @access  Device (requires valid x-api-key)
+export const reportUpdate = async (req, res) => {
+  try {
+    const device = req.device;
+    const firmware = await Firmware.findById(req.body.firmwareId);
+    if (!firmware) {
+      return res.status(404).json({ error: "Firmware not found" });
+    }
+
+    // Record the install, then move the device to the new version
+    const log = await UpdateLog.create({
+      device: device._id,
+      firmware: firmware._id,
+      fromVersion: device.currentFirmwareVersion,
+    });
+    device.currentFirmwareVersion = firmware.version;
+    await device.save();
+
+    res.status(201).json({
+      message: `Device is now on v${firmware.version}`,
+      update: log,
+    });
+  } catch (error) {
+    sendError(res, error, "Server error while reporting update");
   }
 };

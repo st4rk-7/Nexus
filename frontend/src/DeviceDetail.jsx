@@ -5,13 +5,17 @@ import { api } from "./api.js";
 
 function DeviceDetail({ id, token, onBack, onEdit, onDeleted }) {
   const [device, setDevice] = useState(null);
+  const [updates, setUpdates] = useState([]);
   const [error, setError] = useState("");
   const [deleting, setDeleting] = useState(false);
 
   // Load the device whenever the id changes.
   useEffect(() => {
     api(`/api/devices/${id}`)
-      .then((data) => setDevice(data.device))
+      .then((data) => {
+        setDevice(data.device);
+        setUpdates(data.updates);
+      })
       .catch((err) => setError(err.message));
   }, [id]);
 
@@ -56,6 +60,33 @@ function DeviceDetail({ id, token, onBack, onEdit, onDeleted }) {
             <dt>Last updated</dt>
             <dd>{new Date(device.updatedAt).toLocaleString()}</dd>
           </dl>
+
+          <h3>Update history</h3>
+          {updates.length === 0 ? (
+            <p style={{ color: "var(--text-muted)" }}>No firmware updates reported yet.</p>
+          ) : (
+            <div className="table-wrap">
+              <table className="device-table">
+                <thead>
+                  <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Installed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {updates.map((update) => (
+                    <tr key={update._id}>
+                      <td className="mono">{update.fromVersion}</td>
+                      {/* firmware is populated by the server; it is null if that release was removed */}
+                      <td className="mono">{update.firmware?.version ?? "—"}</td>
+                      <td>{new Date(update.createdAt).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           <div className="actions">
             <button onClick={() => onEdit(device)}>Edit</button>
