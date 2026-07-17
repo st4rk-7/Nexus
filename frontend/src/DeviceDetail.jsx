@@ -55,6 +55,8 @@ function DeviceDetail({ id, token, onBack, onEdit, onDeleted }) {
             <dd className="mono">{device.currentFirmwareVersion}</dd>
             <dt>Device ID</dt>
             <dd className="mono">{device._id}</dd>
+            <dt>Last seen</dt>
+            <dd>{device.lastSeen ? new Date(device.lastSeen).toLocaleString() : "—"}</dd>
             <dt>Registered</dt>
             <dd>{new Date(device.createdAt).toLocaleString()}</dd>
             <dt>Last updated</dt>

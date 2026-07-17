@@ -30,6 +30,8 @@ function Releases() {
               <span className="note">
                 {release.releaseNotes}
                 {release.uploadedBy && ` · by ${release.uploadedBy.username}`}
+                {/* Inactive releases are never offered to devices */}
+                {!release.isActive && " · inactive"}
               </span>
             </li>
           ))}

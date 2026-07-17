@@ -52,6 +52,12 @@ const deviceSchema = new mongoose.Schema(
       enum: { values: ["online", "offline"], message: "Status must be online or offline" },
       default: "online",
     },
+    // When the device last talked to the server (register, check-update,
+    // report-update). Devices silent for too long are marked offline.
+    lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     // Automatically adds `createdAt` and `updatedAt` timestamps to every record.

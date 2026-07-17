@@ -25,6 +25,27 @@ function sendError(res, error, fallbackMessage) {
   res.status(500).json({ error: fallbackMessage });
 }
 
+// A device that hasn't checked in for this long counts as offline
+const OFFLINE_AFTER_MINUTES = 5;
+
+// Marks devices offline once they stop checking in. Runs before reads so the
+// list, filter and sort all see current statuses. (Old records without
+// lastSeen fall back to updatedAt.)
+async function markSilentDevicesOffline() {
+  const cutoff = new Date(Date.now() - OFFLINE_AFTER_MINUTES * 60 * 1000);
+  await Device.updateMany(
+    {
+      status: "online",
+      $or: [
+        { lastSeen: { $lt: cutoff } },
+        { lastSeen: { $exists: false }, updatedAt: { $lt: cutoff } },
+      ],
+    },
+    { status: "offline" },
+    { timestamps: false } // a status sweep is not an admin edit
+  );
+}
+
 // Allowed values for ?sort= on the device list
 const SORT_OPTIONS = {
   newest: { createdAt: -1 },
@@ -41,6 +62,11 @@ export const checkUpdate = async (req, res) => {
     // The device is already identified by the deviceAuth middleware — we trust
     // req.device, NOT a name in the body (a name could be faked; the key can't).
     const device = req.device;
+
+    // Checking in proves the device is alive
+    device.lastSeen = new Date();
+    device.status = "online";
+    await device.save();
 
     // The device tells us what version it's currently running. Fall back to
     // whatever we have on record if it doesn't send one.
@@ -79,6 +105,7 @@ export const checkUpdate = async (req, res) => {
 // @route   GET /api/devices?search=sensor&status=online&sort=name
 export const getDevices = async (req, res) => {
   try {
+    await markSilentDevicesOffline();
     const { search, status, sort } = req.query;
     const filter = {};
 
@@ -108,6 +135,7 @@ export const getDevices = async (req, res) => {
 // @route   GET /api/devices/:id
 export const getDeviceById = async (req, res) => {
   try {
+    await markSilentDevicesOffline();
     const device = await Device.findById(req.params.id);
     if (!device) {
       return res.status(404).json({ error: "Device not found" });
@@ -221,6 +249,8 @@ export const reportUpdate = async (req, res) => {
       fromVersion: device.currentFirmwareVersion,
     });
     device.currentFirmwareVersion = firmware.version;
+    device.lastSeen = new Date();
+    device.status = "online";
     await device.save();
 
     res.status(201).json({

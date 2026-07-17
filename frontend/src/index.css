@@ -2,6 +2,22 @@
    Look: a 1970s space-agency standards manual. One committed red for the
    shell, one grotesk (Archivo), ruled tables, 2px corners. */
 
+/* Fonts are bundled with the app (latin subset), so it works offline.
+   Both are variable fonts: one file covers every weight (and Archivo's widths). */
+@font-face {
+  font-family: "Archivo";
+  src: url("./fonts/archivo-latin.woff2") format("woff2");
+  font-weight: 400 800;
+  font-stretch: 62% 125%;
+  font-display: swap;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("./fonts/jetbrains-mono-latin.woff2") format("woff2");
+  font-weight: 400 500;
+  font-display: swap;
+}
+
 :root {
   /* --- Surfaces + text --- */
   --paper: #f5f4f0;       /* page background */

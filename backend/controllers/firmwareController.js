@@ -3,6 +3,7 @@
 
 import { Firmware } from "../models/Firmware.js";
 import path from "path";
+import fs from "fs";
 
 // @desc    Upload a new firmware version
 // @route   POST /api/firmware
@@ -70,6 +71,10 @@ export const downloadFirmware = async (req, res) => {
     const firmware = await Firmware.findById(id);
     if (!firmware) {
       return res.status(404).json({ error: "Firmware not found" });
+    }
+    // The record can outlive its file (e.g. uploads/ was cleared), so check first
+    if (!firmware.filePath || !fs.existsSync(firmware.filePath)) {
+      return res.status(404).json({ error: `The file for firmware v${firmware.version} is missing on the server` });
     }
 
     // Tell Express to serve the file.
