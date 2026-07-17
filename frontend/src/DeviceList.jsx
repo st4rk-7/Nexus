@@ -13,8 +13,9 @@ function DeviceList({ token }) {
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  // A success message (e.g. "Device deleted") shown above the table.
-  const [notice, setNotice] = useState("");
+  // A success message (e.g. "Device deleted") shown above the table,
+  // plus the new device's API key when one was just created.
+  const [notice, setNotice] = useState({ text: "", apiKey: "" });
 
   // Search, filter and sort are sent to the server as query parameters.
   const [search, setSearch] = useState("");
@@ -42,8 +43,13 @@ function DeviceList({ token }) {
     };
   }, [search, status, sort, view.mode]);
 
-  function showList(message = "") {
-    setNotice(message);
+  // Each screen change starts at the top, so the heading and "back" link are visible.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
+
+  function showList(text = "", apiKey = "") {
+    setNotice({ text, apiKey });
     setView({ mode: "list" });
   }
 
@@ -54,7 +60,7 @@ function DeviceList({ token }) {
         onCancel={() => showList()}
         // The API key is only returned once, at creation, so show it now.
         onSaved={(data) =>
-          showList(`Created "${data.device.name}". API key (shown only once): ${data.apiKey}`)
+          showList(`Created "${data.device.name}". Copy its API key now — it is shown only once.`, data.apiKey)
         }
       />
     );
@@ -83,39 +89,40 @@ function DeviceList({ token }) {
     );
   }
 
+  const online = devices.filter((d) => d.status === "online").length;
+
   return (
-    <div className="card">
-      <div className="card-header">
-        <h2>Devices ({devices.length})</h2>
-        <button onClick={() => setView({ mode: "create" })}>Add device</button>
+    <section>
+      <div className="head">
+        <h2>Fleet</h2>
+        <p className="sum">
+          <b>{devices.length}</b> {devices.length === 1 ? "device" : "devices"} · <b>{online}</b> online ·{" "}
+          <b>{devices.length - online}</b> offline
+        </p>
       </div>
 
-      {notice && (
-        <p className="notice mono" role="status">
-          {notice}
-        </p>
+      {notice.text && (
+        <div className="notice" role="status">
+          {notice.text}
+          {notice.apiKey && <span className="mono">{notice.apiKey}</span>}
+        </div>
       )}
 
-      <div className="toolbar">
-        <label>
-          Search
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Name or type"
-          />
+      <div className="tools">
+        <label className="field">
+          <span>Search</span>
+          <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name or type" />
         </label>
-        <label>
-          Status
+        <label className="field">
+          <span>Status</span>
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
             <option value="">All</option>
             <option value="online">Online</option>
             <option value="offline">Offline</option>
           </select>
         </label>
-        <label>
-          Sort by
+        <label className="field">
+          <span>Sort by</span>
           <select value={sort} onChange={(e) => setSort(e.target.value)}>
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -123,23 +130,26 @@ function DeviceList({ token }) {
             <option value="status">Status</option>
           </select>
         </label>
+        <button className="btn" onClick={() => setView({ mode: "create" })}>Add device</button>
       </div>
 
-      {error && <p role="alert" style={{ color: "var(--danger)" }}>{error}</p>}
+      {error && <p className="error" role="alert">{error}</p>}
 
       {loading && devices.length === 0 ? (
-        <p style={{ color: "var(--text-muted)" }}>Loading devices…</p>
+        <p className="empty">Loading devices…</p>
       ) : devices.length === 0 ? (
-        <p style={{ color: "var(--text-muted)" }}>
-          {search || status ? "No devices match these filters." : "No devices registered yet."}
+        <p className="empty">
+          {search || status
+            ? "No devices match these filters. Clear the search or status to see the whole fleet."
+            : "No devices yet. Add one here, or run the simulator to register a device."}
         </p>
       ) : (
         <div className="table-wrap">
-          <table className="device-table">
+          <table className="table">
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Type</th>
+                <th className="col-type">Type</th>
                 <th>Firmware</th>
                 <th>Status</th>
               </tr>
@@ -151,17 +161,14 @@ function DeviceList({ token }) {
                 <tr key={device._id}>
                   <td>
                     {/* The name opens the detail screen. */}
-                    <button
-                      className="link"
-                      onClick={() => setView({ mode: "detail", id: device._id })}
-                    >
+                    <button className="link" onClick={() => setView({ mode: "detail", id: device._id })}>
                       {device.name}
                     </button>
                   </td>
-                  <td>{device.type}</td>
+                  <td className="col-type">{device.type}</td>
                   <td className="mono">{device.currentFirmwareVersion}</td>
                   <td>
-                    <span className={`badge badge-${device.status}`}>{device.status}</span>
+                    <span className={`status status-${device.status}`}>{device.status}</span>
                   </td>
                 </tr>
               ))}
@@ -169,7 +176,7 @@ function DeviceList({ token }) {
           </table>
         </div>
       )}
-    </div>
+    </section>
   );
 }
 

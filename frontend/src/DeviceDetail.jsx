@@ -35,24 +35,24 @@ function DeviceDetail({ id, token, onBack, onEdit, onDeleted }) {
   }
 
   return (
-    <div className="card">
+    <section>
       <button className="link" onClick={onBack}>← All devices</button>
 
-      {error && <p role="alert" style={{ color: "var(--danger)" }}>{error}</p>}
-      {!device && !error && <p style={{ color: "var(--text-muted)" }}>Loading device…</p>}
+      {error && <p className="error" role="alert">{error}</p>}
+      {!device && !error && <p className="empty">Loading device…</p>}
 
       {device && (
         <>
-          <h2 style={{ marginTop: "0.75rem" }}>{device.name}</h2>
+          <div className="head" style={{ marginTop: 16 }}>
+            <h2>{device.name}</h2>
+            <span className={`status status-${device.status}`}>{device.status}</span>
+          </div>
+
           <dl className="details">
             <dt>Type</dt>
             <dd>{device.type}</dd>
             <dt>Firmware</dt>
             <dd className="mono">{device.currentFirmwareVersion}</dd>
-            <dt>Status</dt>
-            <dd>
-              <span className={`badge badge-${device.status}`}>{device.status}</span>
-            </dd>
             <dt>Device ID</dt>
             <dd className="mono">{device._id}</dd>
             <dt>Registered</dt>
@@ -61,12 +61,12 @@ function DeviceDetail({ id, token, onBack, onEdit, onDeleted }) {
             <dd>{new Date(device.updatedAt).toLocaleString()}</dd>
           </dl>
 
-          <h3>Update history</h3>
+          <h3 className="section-head">Update history</h3>
           {updates.length === 0 ? (
-            <p style={{ color: "var(--text-muted)" }}>No firmware updates reported yet.</p>
+            <p className="empty">No firmware updates reported yet. They appear here when the device installs a release.</p>
           ) : (
             <div className="table-wrap">
-              <table className="device-table">
+              <table className="table">
                 <thead>
                   <tr>
                     <th>From</th>
@@ -89,14 +89,14 @@ function DeviceDetail({ id, token, onBack, onEdit, onDeleted }) {
           )}
 
           <div className="actions">
-            <button onClick={() => onEdit(device)}>Edit</button>
-            <button className="danger" onClick={handleDelete} disabled={deleting}>
-              {deleting ? "Deleting…" : "Delete"}
+            <button className="btn" onClick={() => onEdit(device)}>Edit device</button>
+            <button className="btn danger" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "Deleting…" : "Delete device"}
             </button>
           </div>
         </>
       )}
-    </div>
+    </section>
   );
 }
 

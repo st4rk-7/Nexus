@@ -37,13 +37,15 @@ function DeviceForm({ token, device, onSaved, onCancel }) {
   }
 
   return (
-    <form className="card" onSubmit={handleSubmit}>
-      <h2>{editing ? `Edit ${device.name}` : "Add device"}</h2>
+    <form onSubmit={handleSubmit}>
+      <div className="head">
+        <h2>{editing ? `Edit ${device.name}` : "Add device"}</h2>
+      </div>
 
       {/* Browser-side checks (required, length, pattern) mirror the schema rules. */}
       <div className="form-grid">
-        <label>
-          Name
+        <label className="field">
+          <span>Name</span>
           <input
             name="name"
             value={form.name}
@@ -57,8 +59,8 @@ function DeviceForm({ token, device, onSaved, onCancel }) {
           />
         </label>
 
-        <label>
-          Type
+        <label className="field">
+          <span>Type</span>
           <input
             name="type"
             value={form.type}
@@ -69,8 +71,8 @@ function DeviceForm({ token, device, onSaved, onCancel }) {
           />
         </label>
 
-        <label>
-          Firmware version
+        <label className="field">
+          <span>Firmware version</span>
           <input
             name="currentFirmwareVersion"
             className="mono"
@@ -84,8 +86,8 @@ function DeviceForm({ token, device, onSaved, onCancel }) {
 
         {/* New devices always start online, so status is only editable later. */}
         {editing && (
-          <label>
-            Status
+          <label className="field">
+            <span>Status</span>
             <select name="status" value={form.status} onChange={handleChange}>
               <option value="online">Online</option>
               <option value="offline">Offline</option>
@@ -94,13 +96,13 @@ function DeviceForm({ token, device, onSaved, onCancel }) {
         )}
       </div>
 
-      {error && <p role="alert" style={{ color: "var(--danger)" }}>{error}</p>}
+      {error && <p className="error" role="alert" style={{ marginTop: 16 }}>{error}</p>}
 
       <div className="actions">
-        <button type="submit" disabled={saving}>
+        <button type="submit" className="btn" disabled={saving}>
           {saving ? "Saving…" : editing ? "Save changes" : "Create device"}
         </button>
-        <button type="button" className="secondary" onClick={onCancel}>
+        <button type="button" className="btn ghost" onClick={onCancel}>
           Cancel
         </button>
       </div>

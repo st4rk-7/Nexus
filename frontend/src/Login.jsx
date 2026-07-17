@@ -3,6 +3,7 @@
 // success hands the returned JWT token up to the parent via onLogin().
 
 import { useState } from "react";
+import Wordmark from "./Wordmark.jsx";
 
 // `onLogin` is a function passed in by the parent (App). We call it with the
 // token once login succeeds, so the parent can switch to the dashboard.
@@ -47,38 +48,38 @@ function Login({ onLogin }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 320 }}>
-      <h2>Admin Login</h2>
-
-      <div style={{ marginBottom: "0.75rem" }}>
-        <label>
-          Username<br />
-          <input
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoFocus
-          />
-        </label>
+    <section className="login">
+      {/* Red field: the wordmark draws itself once when the page opens. */}
+      <div className="login-mark">
+        <span />
+        <Wordmark draw />
       </div>
 
-      <div style={{ marginBottom: "0.75rem" }}>
-        <label>
-          Password<br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </label>
+      <div className="login-panel">
+        <h1>Firmware control</h1>
+        <p>Register devices, ship firmware over the air, and see what every device runs.</p>
+
+        <form onSubmit={handleSubmit}>
+          <label className="field">
+            <span>Username</span>
+            <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoFocus required />
+          </label>
+          <label className="field">
+            <span>Password</span>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+          </label>
+
+          {/* Only show the error if there is one. */}
+          {error && <p className="error" role="alert">{error}</p>}
+
+          <button type="submit" className="btn" disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+
+        <p className="caption">Admins sign in with a password. Devices use their own API keys.</p>
       </div>
-
-      {/* Only show the error box if there's an error. */}
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
-
-      <button type="submit" disabled={loading}>
-        {loading ? "Logging in…" : "Login"}
-      </button>
-    </form>
+    </section>
   );
 }
 

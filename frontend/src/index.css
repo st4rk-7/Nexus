@@ -1,31 +1,24 @@
-/* index.css — the app's base styles + design tokens.
-   Colors are in OKLCH: oklch(Lightness Chroma Hue). Lightness 0=black, 1=white.
-   Keeping tokens in one place (CSS variables) means we theme the whole app by
-   editing here, not every component. */
+/* index.css — the app's styles and design tokens.
+   Look: a 1970s space-agency standards manual. One committed red for the
+   shell, one grotesk (Archivo), ruled tables, 2px corners. */
 
 :root {
-  /* --- Neutrals (surfaces + text) --- */
-  --bg: oklch(0.985 0.002 250);          /* page background — near white */
-  --surface: oklch(1 0 0);                /* cards — pure white */
-  --border: oklch(0.92 0.004 250);        /* hairline borders */
-  --text: oklch(0.25 0.01 250);           /* primary text — dark, easy to read */
-  --text-muted: oklch(0.55 0.01 250);     /* secondary text — labels, hints */
+  /* --- Surfaces + text --- */
+  --paper: #f5f4f0;       /* page background */
+  --panel: #ffffff;       /* tables, inputs */
+  --ink: #141414;         /* text, primary buttons, heavy rules */
+  --ink-2: #55534e;       /* secondary text and labels */
+  --rule: #dcd9d2;        /* hairlines and input borders */
 
-  /* --- Brand + status --- */
-  --brand: oklch(0.55 0.17 260);          /* buttons, links — indigo */
-  --brand-hover: oklch(0.48 0.17 260);
-  --online: oklch(0.62 0.15 150);         /* green — device online */
-  --online-bg: oklch(0.95 0.04 150);
-  --offline: oklch(0.6 0.02 250);         /* gray — device offline */
-  --offline-bg: oklch(0.94 0.004 250);
-  --danger: oklch(0.55 0.2 25);           /* red — errors */
+  /* --- Brand + state --- */
+  --red: #d12a22;         /* the shell colour: top bar, login, focus */
+  --red-dark: #ab211b;
+  --red-soft: #fbe6e3;    /* focus halo, highlighted rows */
+  --offline: #6f6c65;
 
-  /* --- Shape + depth --- */
-  --radius: 12px;                          /* outer radius of cards */
-  --radius-sm: 8px;                        /* inner elements (badges, inputs) */
-  /* Layered shadow reads as natural depth (skill: shadows over borders). */
-  --shadow: 0 1px 2px oklch(0.25 0.01 250 / 0.04),
-            0 2px 8px oklch(0.25 0.01 250 / 0.06);
+  --sans: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 
   color-scheme: light;
 }
@@ -34,160 +27,274 @@
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  /* Crisper text rendering on macOS/Safari. */
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 15px/1.5 var(--sans);
   -webkit-font-smoothing: antialiased;
-  line-height: 1.5;
 }
 
-h1, h2, h3 { line-height: 1.2; margin: 0 0 0.5rem; }
+::selection { background: var(--red); color: #fff; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+input, select, button, textarea { font: inherit; color: inherit; }
+h1, h2, h3 { margin: 0; line-height: 1.1; text-wrap: balance; }
+p { margin: 0; }
+
+/* Versions, ids and keys: monospace with aligned digits. */
+.mono { font-family: var(--mono); font-size: 0.9em; font-variant-numeric: tabular-nums; }
+.muted { color: var(--ink-2); }
+.error { color: var(--red-dark); font-weight: 500; }
 
 /* --- Buttons --- */
-button {
-  font: inherit;
-  font-weight: 500;
-  color: white;
-  background: var(--brand);
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  /* Only animate what changes — never `transition: all`. */
-  transition-property: background-color, scale;
-  transition-duration: 120ms;
-}
-button:hover { background: var(--brand-hover); }
-button:active { scale: 0.97; }          /* tactile press feedback */
-button:disabled { opacity: 0.6; cursor: default; scale: 1; }
-
-/* A quiet, secondary button (e.g. Log out). */
-button.secondary {
-  color: var(--text);
-  background: var(--surface);
-  box-shadow: inset 0 0 0 1px var(--border);
-}
-button.secondary:hover { background: var(--bg); }
-
-/* Destructive action (Delete). */
-button.danger { background: var(--danger); }
-button.danger:hover { background: oklch(0.48 0.2 25); }
-
-/* A button that looks like a link (device names, "back"). */
-button.link {
-  color: var(--brand);
-  background: none;
-  padding: 0;
-  text-align: left;
-}
-button.link:hover { background: none; text-decoration: underline; }
-
-/* --- Inputs --- */
-input, select {
-  font: inherit;
-  width: 100%;
-  padding: 0.5rem 0.65rem;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  margin-top: 0.25rem;
-}
-input:focus, select:focus {
-  outline: 2px solid var(--brand);
-  outline-offset: 1px;
-  border-color: transparent;
-}
-
-label { font-size: 0.9rem; color: var(--text-muted); }
-
-/* --- Reusable card surface --- */
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 1.25rem;
-}
-
-/* --- Device table --- */
-.device-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.device-table th {
-  text-align: left;
-  font-size: 0.8rem;
+.btn {
+  height: 44px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--ink);
+  color: #fff;
   font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 160ms var(--ease), transform 160ms var(--ease);
+}
+.btn:hover { background: var(--red); }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.55; cursor: default; transform: none; background: var(--ink); }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--rule); }
+.btn.ghost:hover { box-shadow: inset 0 0 0 1px var(--ink); }
+.btn.danger { background: var(--red); }
+.btn.danger:hover { background: var(--red-dark); }
+
+/* A button that reads as a link (device names, "back"). */
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  text-underline-offset: 3px;
+  transition: color 160ms var(--ease);
+}
+.link:hover { color: var(--red); text-decoration: underline; }
+
+/* --- Form fields: <label class="field"><span>Label</span><input/></label> --- */
+.field { display: grid; gap: 6px; }
+.field > span {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--text-muted);
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--border);
+  color: var(--ink-2);
 }
-.device-table td {
-  padding: 0.65rem 0.75rem;
-  border-bottom: 1px solid var(--border);
+.field input, .field select {
+  height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  transition: border-color 160ms var(--ease), box-shadow 160ms var(--ease);
 }
-/* Last row shouldn't carry a divider line. */
-.device-table tbody tr:last-child td { border-bottom: none; }
-
-/* Monospaced, tabular figures so version numbers align vertically. */
-.mono {
-  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  font-variant-numeric: tabular-nums;
+.field input[type="file"] { padding: 10px 12px; height: auto; }
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px var(--red-soft);
 }
-
-/* --- Status badge --- */
-.badge {
-  display: inline-block;
-  font-size: 0.8rem;
-  font-weight: 500;
-  text-transform: capitalize;
-  padding: 0.15rem 0.6rem;
-  border-radius: 999px; /* pill */
-}
-.badge-online  { color: var(--online);  background: var(--online-bg); }
-.badge-offline { color: var(--offline); background: var(--offline-bg); }
-
 /* Native validation feedback once the user has typed something invalid. */
-input:user-invalid { border-color: var(--danger); }
+.field input:user-invalid { border-color: var(--red); }
+.field small { color: var(--ink-2); font-size: 13px; }
 
-/* --- Layout helpers --- */
-.card-header {
+/* =========================================================
+   Login
+   ========================================================= */
+.login { min-height: 100vh; display: grid; grid-template-columns: 1.15fr 1fr; }
+.login-mark {
+  background: var(--red);
+  color: #fff;
+  padding: 48px;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   justify-content: space-between;
+  gap: 48px;
+}
+.spec { display: flex; flex-wrap: wrap; gap: 8px 40px; margin: 0; font-size: 12px; }
+.spec div { display: grid; gap: 4px; }
+.spec dt { opacity: 0.8; font-weight: 500; letter-spacing: 0.02em; }
+.spec dd { margin: 0; font-family: var(--mono); }
+.login-panel {
+  padding: 48px clamp(24px, 6vw, 96px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 28px;
+}
+.login-panel h1 { font-size: clamp(2.2rem, 4vw, 3.4rem); font-weight: 760; font-stretch: 118%; letter-spacing: -0.02em; }
+.login-panel p { max-width: 36ch; color: var(--ink-2); }
+.login-panel form { display: grid; gap: 16px; max-width: 380px; }
+.login-panel .caption { font-size: 13px; color: var(--ink-2); }
+
+/* The monoline wordmark. Stroke width scales with the drawing. */
+.wordmark { display: block; width: 100%; height: auto; overflow: visible; }
+.wordmark path { fill: none; stroke: currentColor; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; }
+
+/* =========================================================
+   App shell
+   ========================================================= */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  height: 56px;
+  display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 24px;
+  padding: 0 24px;
+  background: var(--red);
+  color: #fff;
 }
-.actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.bar .wordmark { width: auto; height: 22px; }
+.bar .wordmark path { stroke-width: 18; }
+.bar .who { margin-left: auto; display: flex; align-items: center; gap: 16px; font-size: 14px; }
+.bar .who button {
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
-/* Search / filter / sort controls: side by side, wrapping on small screens. */
-.toolbar { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
-.toolbar > label { flex: 1 1 10rem; }
+.page {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+  display: grid;
+  grid-template-columns: minmax(0, 2.1fr) minmax(300px, 1fr);
+  gap: 40px;
+  align-items: start;
+}
 
-.form-grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+/* Page head: wide heading on a heavy ink rule. */
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid var(--ink);
+}
+.head h2 { font-size: 2.6rem; font-weight: 780; font-stretch: 120%; letter-spacing: -0.02em; }
+.head .sum { color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.head .sum b { color: var(--ink); font-weight: 650; }
 
-/* Lets the table scroll sideways on phones instead of breaking the page. */
+/* Section head inside the aside and detail view. */
+.section-head {
+  font-size: 1.1rem;
+  font-weight: 720;
+  font-stretch: 112%;
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--ink);
+}
+.aside { display: grid; gap: 40px; }
+.stack { display: grid; gap: 14px; }
+
+/* --- Toolbar: search / status / sort / add --- */
+.tools {
+  display: grid;
+  grid-template-columns: 1fr 150px 170px auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+/* --- Tables --- */
 .table-wrap { overflow-x: auto; }
-
-/* Success message, e.g. after creating or deleting a device. */
-.notice {
-  color: var(--online);
-  background: var(--online-bg);
-  border-radius: var(--radius-sm);
-  padding: 0.5rem 0.75rem;
-  overflow-wrap: anywhere;   /* long API keys wrap instead of overflowing */
+.table { width: 100%; border-collapse: collapse; background: var(--panel); }
+.table th {
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--ink);
+  white-space: nowrap;
 }
+.table td { padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+.table tbody tr { transition: background-color 160ms var(--ease); }
+.table tbody tr:hover { background: #faf9f6; }
+.table tbody tr:last-child td { border-bottom: 0; }
 
-/* Detail view: label / value pairs in two columns. */
+/* Status: a filled ink dot for online, a hollow ring for offline. */
+.status { display: inline-flex; align-items: center; gap: 8px; text-transform: capitalize; white-space: nowrap; }
+.status::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--ink); }
+.status-offline { color: var(--offline); }
+.status-offline::before { background: transparent; box-shadow: inset 0 0 0 1.5px var(--offline); }
+
+/* Empty / loading text inside a panel. */
+.empty { background: var(--panel); padding: 32px 16px; color: var(--ink-2); }
+
+/* Success message, e.g. the one-time API key after creating a device. */
+.notice {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  background: var(--red-soft);
+  overflow-wrap: anywhere;
+}
+.notice .mono { display: block; margin-top: 4px; }
+
+/* --- Detail view: label / value pairs --- */
 .details {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: 0.5rem 1.5rem;
-  margin: 1rem 0;
+  gap: 0;
+  margin: 0 0 32px;
+  background: var(--panel);
 }
-.details dt { color: var(--text-muted); }
-.details dd { margin: 0; overflow-wrap: anywhere; }
+.details dt, .details dd { padding: 12px 16px; border-bottom: 1px solid var(--rule); margin: 0; }
+.details dt { color: var(--ink-2); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.details dd { overflow-wrap: anywhere; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
+.form-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+
+/* --- Releases list in the aside --- */
+.releases { list-style: none; margin: 0; padding: 0; }
+.releases li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.releases li:first-child { padding-top: 0; }
+.releases .note { grid-column: 1 / -1; color: var(--ink-2); font-size: 14px; }
+.releases .when { color: var(--ink-2); font-size: 13px; }
+
+/* =========================================================
+   Small screens
+   ========================================================= */
+@media (max-width: 900px) {
+  .login { grid-template-columns: 1fr; }
+  .login-mark { min-height: 42vh; padding: 28px 20px; }
+  .login-panel { padding: 32px 20px 48px; }
+  .bar { padding: 0 16px; }
+  .page { grid-template-columns: 1fr; padding: 28px 16px 64px; gap: 48px; }
+  .head h2 { font-size: 2rem; }
+  .tools { grid-template-columns: 1fr 1fr; }
+  .tools > :first-child { grid-column: 1 / -1; }
+  .col-type { display: none; }
+  .table th, .table td { padding: 12px 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}

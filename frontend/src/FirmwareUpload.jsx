@@ -63,50 +63,45 @@ function FirmwareUpload({ token, onUploaded }) {
   }
 
   return (
-    <form className="card" onSubmit={handleSubmit} style={{ marginBottom: "1.5rem" }}>
-      <h2>Upload firmware</h2>
-
-      <div style={{ marginBottom: "0.75rem" }}>
-        <label>
-          Version <span style={{ color: "var(--text-muted)" }}>(e.g. 1.2.0)</span>
+    <section>
+      <h3 className="section-head">Upload firmware</h3>
+      <form className="stack" onSubmit={handleSubmit}>
+        <label className="field">
+          <span>Version</span>
           <input
+            className="mono"
             value={version}
             onChange={(e) => setVersion(e.target.value)}
             placeholder="1.2.0"
+            pattern="\d+\.\d+\.\d+"
+            title="Format: major.minor.patch, e.g. 1.2.0"
             required
           />
         </label>
-      </div>
 
-      <div style={{ marginBottom: "0.75rem" }}>
-        <label>
-          Release notes
+        <label className="field">
+          <span>Release notes</span>
           <input
             value={releaseNotes}
             onChange={(e) => setReleaseNotes(e.target.value)}
             placeholder="What changed in this version?"
           />
         </label>
-      </div>
 
-      <div style={{ marginBottom: "0.75rem" }}>
-        <label>
-          Firmware file
-          <input
-            type="file"
-            onChange={(e) => setFile(e.target.files[0] || null)}
-            required
-          />
+        <label className="field">
+          <span>Firmware file</span>
+          <input type="file" onChange={(e) => setFile(e.target.files[0] || null)} required />
+          <small>Devices checking in will be offered this version.</small>
         </label>
-      </div>
 
-      {error && <p style={{ color: "var(--danger)" }}>{error}</p>}
-      {success && <p style={{ color: "var(--online)" }}>{success}</p>}
+        {error && <p className="error" role="alert">{error}</p>}
+        {success && <p className="notice" role="status">{success}</p>}
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Uploading…" : "Upload"}
-      </button>
-    </form>
+        <button type="submit" className="btn" disabled={loading}>
+          {loading ? "Uploading…" : "Publish release"}
+        </button>
+      </form>
+    </section>
   );
 }
 

@@ -1,17 +1,21 @@
 // App.jsx — the top-level component. It decides what to show:
 //   - not logged in  -> the Login form
-//   - logged in      -> the dashboard (device list + upload, added next)
+//   - logged in      -> the dashboard (devices, firmware upload, releases)
 
 import { useState } from "react";
 import Login from "./Login.jsx";
 import DeviceList from "./DeviceList.jsx";
 import FirmwareUpload from "./FirmwareUpload.jsx";
+import Wordmark from "./Wordmark.jsx";
+import Releases from "./Releases.jsx";
 
 function App() {
   // We keep the JWT token in state. Start by reading any saved token from
   // localStorage, so refreshing the page doesn't log you out.
   const [token, setToken] = useState(() => localStorage.getItem("token") || "");
   const [username, setUsername] = useState(() => localStorage.getItem("username") || "");
+  // Bumped after each upload so the Releases list remounts and re-fetches.
+  const [releasesKey, setReleasesKey] = useState(0);
 
   // Called by <Login /> after a successful login.
   function handleLogin(newToken, newUsername) {
@@ -28,28 +32,30 @@ function App() {
     localStorage.removeItem("username");
   }
 
+  // If we have no token, show the login screen. Otherwise, the dashboard.
+  if (!token) return <Login onLogin={handleLogin} />;
+
   return (
-    <div style={{ fontFamily: "system-ui", padding: "2rem" }}>
-      <h1>Nexus Admin</h1>
-
-      {/* If we have no token, show the login form. Otherwise, the dashboard. */}
-      {!token ? (
-        <Login onLogin={handleLogin} />
-      ) : (
-        <div>
-          <p style={{ color: "var(--text-muted)" }}>
-            Logged in as <strong style={{ color: "var(--text)" }}>{username}</strong>{" "}
-            <button className="secondary" onClick={handleLogout}>Log out</button>
-          </p>
-
-          {/* Admin-only: upload a new firmware version (sends the JWT token). */}
-          <FirmwareUpload token={token} />
-
-          {/* Devices: list, search, add, view, edit, delete (edit/delete need the token). */}
-          <DeviceList token={token} />
+    <>
+      <header className="bar">
+        <Wordmark />
+        <div className="who">
+          <span>{username}</span>
+          <button onClick={handleLogout}>Log out</button>
         </div>
-      )}
-    </div>
+      </header>
+
+      <main className="page">
+        {/* Devices: list, search, add, view, edit, delete (edit/delete need the token). */}
+        <DeviceList token={token} />
+
+        <aside className="aside">
+          {/* Admin-only: upload a new firmware version (sends the JWT token). */}
+          <FirmwareUpload token={token} onUploaded={() => setReleasesKey((k) => k + 1)} />
+          <Releases key={releasesKey} />
+        </aside>
+      </main>
+    </>
   );
 }
 
