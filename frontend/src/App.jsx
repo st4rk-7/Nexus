@@ -1,12 +1,13 @@
 // App.jsx — the top-level component. It decides what to show:
-//   - not logged in  -> the Login form
+//   - not logged in  -> the landing page, then the Login form
 //   - logged in      -> the dashboard (devices, firmware upload, releases)
 
 import { useState } from "react";
 import Login from "./Login.jsx";
+import Landing from "./Landing.jsx";
 import DeviceList from "./DeviceList.jsx";
 import FirmwareUpload from "./FirmwareUpload.jsx";
-import Wordmark from "./Wordmark.jsx";
+import { NexusLogo } from "./NexusLogo.jsx";
 import Releases from "./Releases.jsx";
 
 function App() {
@@ -16,6 +17,8 @@ function App() {
   const [username, setUsername] = useState(() => localStorage.getItem("username") || "");
   // Bumped after each upload so the Releases list remounts and re-fetches.
   const [releasesKey, setReleasesKey] = useState(0);
+  // Logged-out visitors see the landing page until they choose to sign in.
+  const [showLogin, setShowLogin] = useState(false);
 
   // Called by <Login /> after a successful login.
   function handleLogin(newToken, newUsername) {
@@ -33,12 +36,21 @@ function App() {
   }
 
   // If we have no token, show the login screen. Otherwise, the dashboard.
-  if (!token) return <Login onLogin={handleLogin} />;
+  if (!token && !showLogin) return <Landing onStart={() => setShowLogin(true)} />;
+  if (!token)
+    return (
+      <>
+        <button type="button" className="login-back" onClick={() => setShowLogin(false)}>
+          ← Back to overview
+        </button>
+        <Login onLogin={handleLogin} />
+      </>
+    );
 
   return (
     <>
       <header className="bar">
-        <Wordmark />
+        <NexusLogo inverse size={22} className="bar-logo" />
         <div className="who">
           <span>{username}</span>
           <button onClick={handleLogout}>Log out</button>
