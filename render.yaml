@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: nexus-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: bun install
+    startCommand: bun run start
+    healthCheckPath: /health
+    envVars:
+      - key: BUN_VERSION
+        value: 1.3.14
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CLIENT_ORIGIN
+        sync: false
+      - key: ALLOW_ADMIN_REGISTRATION
+        value: "false"
+      - key: MAX_FIRMWARE_SIZE_MB
+        value: "10"
+      - key: DEVICE_OFFLINE_AFTER_MINUTES
+        value: "5"

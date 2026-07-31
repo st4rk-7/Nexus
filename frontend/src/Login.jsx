@@ -3,6 +3,7 @@
 // success hands the returned JWT token up to the parent via onLogin().
 
 import { useState } from "react";
+import { apiUrl } from "./api.js";
 
 // `onLogin` is a function passed in by the parent (App). We call it with the
 // token once login succeeds, so the parent can switch to the dashboard.
@@ -20,9 +21,9 @@ function Login({ onLogin }) {
     setLoading(true);
 
     try {
-      // This is our curl call, but from the browser. Vite's proxy forwards
-      // "/api/..." to the backend on :3000.
-      const res = await fetch("/api/auth/login", {
+      // This is our curl call, but from the browser. apiUrl() uses Vite's
+      // local proxy in development and the Render URL after deployment.
+      const res = await fetch(apiUrl("/api/auth/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),

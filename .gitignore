@@ -1,9 +1,7 @@
 # Dependencies (regenerable with `bun install` — never commit)
 node_modules/
 
-# npm lockfile — this is a Bun project (bun.lock is the tracked one).
-# package-lock.json only exists because we used npm to sidestep a Bun
-# install hang; it's a byproduct, not the source of truth (package.json is).
+# npm lockfile — this is a Bun project (bun.lock is authoritative).
 package-lock.json
 
 # Secrets & environment (NEVER commit — contains DB password, JWT secret)
@@ -14,11 +12,11 @@ package-lock.json
 *.log
 npm-debug.log*
 
-# Build output (frontend, later)
+# Build output
 dist/
 build/
 
-# Uploaded firmware files (we store these locally during dev)
+# Legacy local uploads from before firmware moved to MongoDB GridFS
 uploads/
 
 # OS / editor cruft

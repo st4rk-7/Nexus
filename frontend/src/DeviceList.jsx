@@ -2,8 +2,9 @@
 // in a table with a colored online/offline badge.
 
 import { useState, useEffect } from "react";
+import { apiUrl } from "./api.js";
 
-function DeviceList() {
+function DeviceList({ token }) {
   // Three pieces of state: the data, a loading flag, and any error.
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,11 +12,13 @@ function DeviceList() {
 
   // useEffect runs code AFTER the component first appears on screen.
   // The empty array [] at the end means "run once, on mount" — not every redraw.
-  // This is where we fetch data. (Listing devices is public, so no token needed.)
+  // This is where we fetch data. The route is admin-only, so we attach the JWT.
   useEffect(() => {
     async function loadDevices() {
       try {
-        const res = await fetch("/api/devices");
+        const res = await fetch(apiUrl("/api/devices"), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         const data = await res.json();
         if (!res.ok) {
           setError(data.error || "Failed to load devices");
@@ -29,7 +32,7 @@ function DeviceList() {
       }
     }
     loadDevices();
-  }, []);
+  }, [token]);
 
   if (loading) return <p style={{ color: "var(--text-muted)" }}>Loading devices…</p>;
   if (error) return <p style={{ color: "var(--danger)" }}>{error}</p>;

@@ -2,6 +2,7 @@
 // Sends a file + metadata to POST /api/firmware with the JWT token attached.
 
 import { useState } from "react";
+import { apiUrl } from "./api.js";
 
 // `token` (the admin's JWT) is passed in from App. `onUploaded` lets the
 // parent react after a successful upload (e.g. refresh a list later).
@@ -33,7 +34,7 @@ function FirmwareUpload({ token, onUploaded }) {
       form.append("version", version);
       form.append("releaseNotes", releaseNotes);
 
-      const res = await fetch("/api/firmware", {
+      const res = await fetch(apiUrl("/api/firmware"), {
         method: "POST",
         // Attach the admin's badge. NOTE: we do NOT set Content-Type here —
         // the browser sets it automatically (with the multipart boundary).

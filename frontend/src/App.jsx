@@ -1,6 +1,6 @@
 // App.jsx — the top-level component. It decides what to show:
 //   - not logged in  -> the Login form
-//   - logged in      -> the dashboard (device list + upload, added next)
+//   - logged in      -> the dashboard (device list + firmware upload)
 
 import { useState } from "react";
 import Login from "./Login.jsx";
@@ -46,7 +46,7 @@ function App() {
           <FirmwareUpload token={token} />
 
           {/* The device list fetches and shows all registered devices. */}
-          <DeviceList />
+          <DeviceList token={token} />
         </div>
       )}
     </div>
