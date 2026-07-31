@@ -138,8 +138,9 @@ code into models / routes / services (LO1).
 
 ## Current state
 - **Phase 7 IN PROGRESS.** Deployment code is ready and locally verified. No Git remote
-  exists yet, so nothing has been published to Render or Vercel.
+  exists, so nothing has been published to Render or Vercel. The user chose to keep the
+  project local for now; deployment is postponed, not cancelled.
 
 ## Next action
-Follow `docs/DEPLOYMENT.md`: push to GitHub, deploy Render, deploy Vercel, then run
-the simulator against the public Render URL.
+Begin Phase 8: write the architecture/design explanation and prepare for the viva.
+When cloud deployment resumes, follow `docs/DEPLOYMENT.md`.
