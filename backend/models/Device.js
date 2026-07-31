@@ -44,6 +44,11 @@ const deviceSchema = new mongoose.Schema(
       enum: ["online", "offline"], // Only these two words are allowed
       default: "online",
     },
+    // Updated whenever the device checks for firmware.
+    lastSeenAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
   {
     // Automatically adds `createdAt` and `updatedAt` timestamps to every record.

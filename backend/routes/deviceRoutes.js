@@ -4,12 +4,13 @@
 import express from "express";
 import { registerDevice, getDevices, checkUpdate } from "../controllers/deviceController.js";
 import { deviceAuth } from "../middleware/deviceAuthMiddleware.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 // A "router" is a mini-app inside Express just for routing.
 const router = express.Router();
 
 // GET / — list all devices
-router.get("/", getDevices);
+router.get("/", protect, getDevices);
 
 // POST /register — register a new device
 router.post("/register", registerDevice);

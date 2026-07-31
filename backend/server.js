@@ -15,9 +15,43 @@ import authRoutes from "./routes/authRoutes.js";
 // requests and decides how to respond to each one.
 const app = express();
 
+// Allow the deployed React app to call this API from its own web address.
+// Requests without a browser Origin header (curl and IoT devices) still work.
+const allowedOrigins = (
+  process.env.CLIENT_ORIGIN ||
+  "http://localhost:5173,http://127.0.0.1:5173"
+)
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (origin && !allowedOrigins.includes(origin)) {
+    return res.status(403).json({ error: "Origin is not allowed" });
+  }
+
+  if (origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, x-api-key"
+    );
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 // Middleware: teach Express to read JSON request bodies.
 // When a device/admin sends JSON, this turns it into a usable `req.body`.
-app.use(express.json());
+app.use(express.json({ limit: "100kb" }));
 
 // --- Routes -------------------------------------------------------------
 // A route = (HTTP method + URL) -> a function that builds the response.
@@ -37,9 +71,27 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok", service: "nexus-backend" });
 });
 
+// One final error handler gives malformed uploads a clear JSON response.
+app.use((error, req, res, next) => {
+  if (error?.code === "LIMIT_FILE_SIZE") {
+    return res.status(413).json({
+      error: `Firmware file is too large. Maximum size is ${
+        process.env.MAX_FIRMWARE_SIZE_MB || 10
+      } MB.`,
+    });
+  }
+
+  console.error("Unhandled server error:", error);
+  res.status(500).json({ error: "Unexpected server error" });
+});
+
 // --- Start the server ---------------------------------------------------
 // PORT comes from the environment if set, else default to 3000.
 const PORT = process.env.PORT || 3000;
+
+if (!process.env.MONGODB_URI || !process.env.JWT_SECRET) {
+  throw new Error("MONGODB_URI and JWT_SECRET environment variables are required");
+}
 
 // Connect to the database FIRST, then start listening for requests.
 // (No point accepting requests if we can't store/read data.)

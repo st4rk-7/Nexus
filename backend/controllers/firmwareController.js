@@ -2,7 +2,12 @@
 // Logic for handling firmware uploads and listing.
 
 import { Firmware } from "../models/Firmware.js";
-import path from "path";
+import {
+  deleteFirmwareFile,
+  openFirmwareDownload,
+  storeFirmwareFile,
+} from "../services/firmwareStorage.js";
+import { isValidVersion } from "../utils/version.js";
 
 // @desc    Upload a new firmware version
 // @route   POST /api/firmware
@@ -13,9 +18,17 @@ export const uploadFirmware = async (req, res) => {
       return res.status(400).json({ error: "Please upload a firmware file" });
     }
 
-    const { version, releaseNotes } = req.body;
+    const version = req.body.version?.trim();
+    const releaseNotes = req.body.releaseNotes?.trim();
+
     if (!version) {
       return res.status(400).json({ error: "Please provide a version string (e.g., '1.1.0')" });
+    }
+
+    if (!isValidVersion(version)) {
+      return res.status(400).json({
+        error: "Version must use major.minor.patch format (e.g., 1.1.0)",
+      });
     }
 
     // Check if version already exists
@@ -24,15 +37,22 @@ export const uploadFirmware = async (req, res) => {
       return res.status(400).json({ error: `Firmware version ${version} already exists` });
     }
 
-    // Usually when we upload a new firmware, we might want to make older ones inactive.
-    // For now, let's just save it.
-    
-    // Save the file path so we know where to find it for download later
-    const newFirmware = await Firmware.create({
-      version,
-      releaseNotes,
-      filePath: req.file.path,
-    });
+    // Save the binary in MongoDB GridFS first, then save its metadata.
+    const storedFile = await storeFirmwareFile(req.file);
+    let newFirmware;
+
+    try {
+      newFirmware = await Firmware.create({
+        version,
+        releaseNotes,
+        ...storedFile,
+      });
+    } catch (error) {
+      // If metadata saving fails, remove the uploaded binary so it is not
+      // left behind as an unused file.
+      await deleteFirmwareFile(storedFile.fileId).catch(() => {});
+      throw error;
+    }
 
     res.status(201).json({
       message: "Firmware uploaded successfully",
@@ -68,17 +88,30 @@ export const downloadFirmware = async (req, res) => {
       return res.status(404).json({ error: "Firmware not found" });
     }
 
-    // Tell Express to serve the file.
-    // Express uses `path.resolve` to find the exact file on the hard drive.
-    res.download(path.resolve(firmware.filePath), (err) => {
-      if (err) {
-        console.error("Error downloading file:", err);
-        // If headers are already sent, we can't send a JSON error.
-        if (!res.headersSent) {
-          res.status(500).json({ error: "Failed to download file" });
-        }
+    // Firmware uploaded before the GridFS upgrade only has a local path.
+    // Those old test files cannot survive a cloud restart.
+    if (!firmware.fileId) {
+      return res.status(410).json({
+        error: "This old local firmware file is no longer available. Upload a new version.",
+      });
+    }
+
+    res.attachment(firmware.fileName);
+    res.setHeader("Content-Type", firmware.contentType);
+    res.setHeader("Content-Length", firmware.fileSize);
+
+    const downloadStream = openFirmwareDownload(firmware.fileId);
+
+    downloadStream.once("error", (error) => {
+      console.error("Error downloading firmware:", error);
+      if (!res.headersSent) {
+        res.status(404).json({ error: "Firmware file not found" });
+      } else {
+        res.destroy(error);
       }
     });
+
+    downloadStream.pipe(res);
   } catch (error) {
     console.error("Error initiating download:", error);
     res.status(500).json({ error: "Server error initiating download" });

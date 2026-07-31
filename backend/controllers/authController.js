@@ -17,10 +17,27 @@ function makeToken(adminId) {
 // @route   POST /api/auth/register
 export const registerAdmin = async (req, res) => {
   try {
+    // Admin creation is a one-time setup action. It is closed by default in
+    // production so strangers cannot create their own administrator account.
+    if (process.env.ALLOW_ADMIN_REGISTRATION !== "true") {
+      return res.status(403).json({ error: "Admin registration is closed" });
+    }
+
     const { username, password } = req.body;
 
     if (!username || !password) {
       return res.status(400).json({ error: "Please provide a username and password" });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({
+        error: "Password must be at least 8 characters long",
+      });
+    }
+
+    // Only the first admin can be created through this setup endpoint.
+    if ((await Admin.countDocuments()) > 0) {
+      return res.status(403).json({ error: "The first admin already exists" });
     }
 
     // No duplicate usernames
