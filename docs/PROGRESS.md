@@ -84,13 +84,19 @@ code into models / routes / services (LO1).
 - [x] device-simulator script
 - [x] runs the full loop end-to-end against the backend
 
-### Phase 7 — Deploy to cloud  `[ ]`
+### Phase 7 — Deploy to cloud  `[~]`
 **Goal:** the app runs deployed, not just on localhost.
 **Maps to brief step 8. Bonus per the brief ("hosting is better but not required").**
 **Done when:**
+- [x] cloud-safe firmware storage (MongoDB GridFS)
+- [x] Render and Vercel configuration files
+- [x] production API URL + CORS configuration
+- [x] local production build and full OTA test
+- [ ] project pushed to a Git remote
 - [ ] backend on Render
 - [ ] frontend on Vercel
-- [ ] Atlas as the DB
+- [x] Atlas as the DB
+- [ ] simulator passes against the deployed backend
 
 ### Phase 8 — Design writeup & viva prep  `[ ]`
 **Goal:** be able to justify every design decision (LO4) and pass the evaluation.
@@ -121,15 +127,19 @@ code into models / routes / services (LO1).
   package.json + node_modules; always use `--prefix <dir>` (or run inside the dir). Cleaned up.
 - **Security model:** admins = bcrypt-hashed passwords + JWT (Authorization: Bearer). Devices
   = per-device random apiKey (x-api-key header), stored select:false so it never leaks on reads.
+- **Cloud file storage:** Render's free filesystem is temporary, so firmware binaries use
+  MongoDB GridFS. Upload/download checksums match and the simulator completed against it.
+- **Version safety:** compare `major.minor.patch` numerically; offer only newer firmware,
+  never a downgrade.
+- **Production browser access:** Vite uses a configurable `VITE_API_URL`; Express allows
+  only the configured `CLIENT_ORIGIN`. Curl and devices remain usable without Origin.
+- **Admin setup:** public admin creation is closed by default and can only bootstrap the
+  first account when `ALLOW_ADMIN_REGISTRATION=true`.
 
 ## Current state
-- **Phase 4 COMPLETE.** Admin JWT login + bcrypt password hashing; firmware upload
-  is admin-only (protect middleware); devices authenticate with a per-device apiKey
-  on check-update. All auth paths tested (no/valid/forged credentials).
-## Current state
-- **Phase 6 COMPLETE.** Simulator script (`bun simulator/device.js`) proves the full
-  OTA loop: register → check update → download. Works end-to-end against the live backend.
-- Next: Phase 7 — Deploy to cloud.
+- **Phase 7 IN PROGRESS.** Deployment code is ready and locally verified. No Git remote
+  exists yet, so nothing has been published to Render or Vercel.
 
 ## Next action
-Phase 7: Deploy backend to Render, frontend to Vercel, Atlas already in use.
+Follow `docs/DEPLOYMENT.md`: push to GitHub, deploy Render, deploy Vercel, then run
+the simulator against the public Render URL.

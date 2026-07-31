@@ -82,8 +82,16 @@ We use it to load `bun-patch.js`, a shim that fixes a missing Bun feature the DB
 
 **Multer** — a middleware for Express that handles file uploads. Express `express.json()`
 can only read text (JSON). When uploading files, the request type is `multipart/form-data`.
-Multer catches the file, saves it to a folder (like `uploads/`), and adds `req.file`
-so our code knows where to find it.
+Multer reads the upload into `req.file`. We limit it to one file and 10 MB, then stream it
+into MongoDB GridFS.
+
+**GridFS** — MongoDB's file-storage system. It splits a binary into chunks and rebuilds
+those chunks when downloaded. We use it because a free Render server has a temporary
+filesystem: local uploads disappear after sleep, restart, or redeploy. Atlas persists them.
+
+**Semantic version comparison** — versions are `major.minor.patch`, such as `4.2.1`.
+Compare each number from left to right. A simple string or "not equal" check is unsafe:
+it could mistake `2.0.0` for an update to `10.0.0`, or accidentally offer a downgrade.
 
 ## Auth & security (LO3)
 
@@ -140,7 +148,9 @@ returns a response; `res.ok` is false for 4xx/5xx; `await res.json()` reads the 
 
 **Proxy (CORS)** — a browser blocks a page on one port from calling another (that's CORS).
 Vite's `proxy` config forwards `/api/...` from :5173 to the backend on :3000, so to the
-browser it all looks like one origin. No CORS error, no backend change needed.
+browser it all looks like one origin during local development. In production, Vercel and
+Render have different origins, so `VITE_API_URL` points React to Render and `CLIENT_ORIGIN`
+tells Express which website is allowed to call it.
 
 **localStorage** — a small key/value store in the browser that survives refreshes. We save the
 JWT token there so reloading the page doesn't log you out.
@@ -158,6 +168,22 @@ everywhere via `var(--name)`. Change the theme in one place. We define ours in `
 
 **OKLCH color** — `oklch(Lightness Chroma Hue)`. Lightness 0=black, 1=white. Perceptually
 uniform (equal lightness steps look equally bright), unlike hex/hsl. Used for all our colors.
+
+## Deployment — Phase 7
+
+**Environment variable at build time** — Vite replaces `VITE_*` values while building the
+frontend. `VITE_API_URL` is therefore public configuration, not a secret. Database passwords
+and `JWT_SECRET` belong only on Render and must never use a `VITE_` prefix.
+
+**Ephemeral filesystem** — temporary storage attached to a cloud server. Files written there
+can disappear on restart or deployment. Application code belongs there; permanent user data
+does not. Nexus stores permanent firmware in Atlas GridFS instead.
+
+**Health check** — Render calls `/health` to confirm the API started correctly. A `200`
+response means the process is alive and ready to receive traffic.
+
+**Cold start** — Render's free web service sleeps after being idle. The first request wakes
+it and can take about a minute; later requests are fast while it remains awake.
 
 ---
 
