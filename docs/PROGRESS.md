@@ -140,7 +140,10 @@ code into models / routes / services (LO1).
 - **Phase 7 IN PROGRESS.** Deployment code is ready and locally verified. No Git remote
   exists, so nothing has been published to Render or Vercel. The user chose to keep the
   project local for now; deployment is postponed, not cancelled.
+- A complete manual browser, curl, simulator, Atlas, and code-reading walkthrough is
+  available in `docs/TESTING.md`.
 
 ## Next action
-Begin Phase 8: write the architecture/design explanation and prepare for the viva.
-When cloud deployment resumes, follow `docs/DEPLOYMENT.md`.
+Follow `docs/TESTING.md` to test and understand every layer. Then begin Phase 8:
+write the architecture/design explanation and prepare for the viva. When cloud
+deployment resumes, follow `docs/DEPLOYMENT.md`.
