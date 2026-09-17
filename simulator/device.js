@@ -5,7 +5,7 @@
 // This is the script you demo at the viva. It proves the whole system works
 // end-to-end: register → check update → download firmware.
 
-const BASE = process.env.API_URL || "http://localhost:3000";
+const BASE = process.env.API_URL || "http://localhost:3001";
 const DEVICE_NAME = `sim-device-${Date.now()}`; // unique name each run
 const DEVICE_TYPE = "temperature-sensor";
 const CURRENT_VERSION = "1.0.0"; // the "old" version the device starts with

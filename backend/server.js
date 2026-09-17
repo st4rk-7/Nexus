@@ -19,7 +19,7 @@ const app = express();
 // Requests without a browser Origin header (curl and IoT devices) still work.
 const allowedOrigins = (
   process.env.CLIENT_ORIGIN ||
-  "http://localhost:5173,http://127.0.0.1:5173"
+  "http://localhost:5174,http://127.0.0.1:5174"
 )
   .split(",")
   .map((origin) => origin.trim())
@@ -66,7 +66,7 @@ app.use("/api/firmware", firmwareRoutes);
 app.use("/api/auth", authRoutes);
 
 // Health check: a trivial endpoint to confirm the server is alive.
-// Visit http://localhost:3000/health and you should get this JSON back.
+// Visit http://localhost:3001/health and you should get this JSON back.
 app.get("/health", (req, res) => {
   res.json({ status: "ok", service: "nexus-backend" });
 });
@@ -86,8 +86,8 @@ app.use((error, req, res, next) => {
 });
 
 // --- Start the server ---------------------------------------------------
-// PORT comes from the environment if set, else default to 3000.
-const PORT = process.env.PORT || 3000;
+// PORT comes from the environment if set, else default to 3001.
+const PORT = process.env.PORT || 3001;
 
 if (!process.env.MONGODB_URI || !process.env.JWT_SECRET) {
   throw new Error("MONGODB_URI and JWT_SECRET environment variables are required");

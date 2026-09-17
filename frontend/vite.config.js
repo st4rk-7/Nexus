@@ -6,14 +6,15 @@ export default defineConfig({
   // Teach Vite how to understand React (JSX) files.
   plugins: [react()],
   server: {
-    port: 5173,
+    port: 5174,
+    strictPort: true,
     // --- Proxy ------------------------------------------------------------
-    // Our React app runs on :5173, the backend API on :3000. Browsers block
+    // The DevOps app runs on :5174, the backend API on :3001. Browsers block
     // a page on one port from calling another (CORS). This proxy makes the
     // frontend forward any request starting with "/api" to the backend, so
     // from the browser's view everything comes from the same place.
     proxy: {
-      "/api": "http://localhost:3000",
+      "/api": "http://localhost:3001",
     },
   },
 });

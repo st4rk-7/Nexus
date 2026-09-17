@@ -25,3 +25,16 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+
+# DevOps generated state and local credentials
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+!*.tfvars.example
+*.pem
+*.key
+kubeconfig
+kubeconfig.*
+!kubeconfig.example
