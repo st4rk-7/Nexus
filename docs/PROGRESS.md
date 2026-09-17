@@ -92,7 +92,7 @@ code into models / routes / services (LO1).
 - [x] Render and Vercel configuration files
 - [x] production API URL + CORS configuration
 - [x] local production build and full OTA test
-- [ ] project pushed to a Git remote
+- [x] project pushed to a Git remote
 - [ ] backend on Render
 - [ ] frontend on Vercel
 - [x] Atlas as the DB
@@ -137,9 +137,9 @@ code into models / routes / services (LO1).
   first account when `ALLOW_ADMIN_REGISTRATION=true`.
 
 ## Current state
-- **Phase 7 IN PROGRESS.** Deployment code is ready and locally verified. No Git remote
-  exists, so nothing has been published to Render or Vercel. The user chose to keep the
-  project local for now; deployment is postponed, not cancelled.
+- **Phase 7 IN PROGRESS.** Deployment code is ready and locally verified. The repository
+  is pushed to GitHub at st4rk-7/Nexus. Backend (Render) and frontend (Vercel) cloud
+  services remain to be connected when ready.
 - A complete manual browser, curl, simulator, Atlas, and code-reading walkthrough is
   available in `docs/TESTING.md`.
 
