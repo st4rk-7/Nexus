@@ -38,3 +38,10 @@ Thumbs.db
 kubeconfig
 kubeconfig.*
 !kubeconfig.example
+
+# AI / editor agent files
+.agents/
+.claude/
+AGENTS.md
+CLAUDE.md
+skills-lock.json
