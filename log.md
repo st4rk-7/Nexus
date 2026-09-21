@@ -10,3 +10,12 @@
 - **Course Tracker:** Registered Group 72 with stack (`ReactJS + Vite`, `Express.js + Bun`) and lab PC IPs.
 - **Repository:** Initialized clean project baseline, `.gitignore`, and tracking log.
 - **Next:** Bring up web app baseline with login functionality, then start Docker containerization.
+
+---
+
+Work below was prepared on **21/09/2026**. The dates are assigned Git commit
+dates; 23–27 September do not represent completed lab sessions.
+
+## 21/09/2026 — Frontend
+
+- Reused the React/Vite frontend from `main`; configured port 5174 and the API proxy.

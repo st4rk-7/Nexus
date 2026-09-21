@@ -1,0 +1,10 @@
+# Frontend dependencies & build output — regenerable, never commit.
+node_modules/
+dist/
+
+# npm lockfile — this project uses the tracked Bun lockfile.
+package-lock.json
+
+# Vite/editor cruft
+.vite/
+*.local
