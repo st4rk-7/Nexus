@@ -19,3 +19,7 @@ dates; 23–27 September do not represent completed lab sessions.
 ## 21/09/2026 — Frontend
 
 - Reused the React/Vite frontend from `main`; configured port 5174 and the API proxy.
+
+## 23/09/2026 — Backend
+
+- Adapted the Express/Bun backend from `main` to run without a database; added a local demo login and temporary storage.
