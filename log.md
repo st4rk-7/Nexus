@@ -23,3 +23,7 @@ dates; 23–27 September do not represent completed lab sessions.
 ## 23/09/2026 — Backend
 
 - Adapted the Express/Bun backend from `main` to run without a database; added a local demo login and temporary storage.
+
+## 24/09/2026 — Device Simulator
+
+- Reused the device simulator from `main` for registration, update checks, and firmware downloads on port 3001.
