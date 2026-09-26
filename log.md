@@ -27,3 +27,7 @@ dates; 23–27 September do not represent completed lab sessions.
 ## 24/09/2026 — Device Simulator
 
 - Reused the device simulator from `main` for registration, update checks, and firmware downloads on port 3001.
+
+## 26/09/2026 — Verification
+
+- Added six passing API tests; checked the frontend build and login through its API proxy.
