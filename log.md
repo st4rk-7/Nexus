@@ -31,3 +31,8 @@ dates; 23–27 September do not represent completed lab sessions.
 ## 26/09/2026 — Verification
 
 - Added six passing API tests; checked the frontend build and login through its API proxy.
+
+## 27/09/2026 — Setup Guide
+
+- Documented startup, demo login, and verification steps for both members.
+- **Planned before 28/09:** practise the demonstration together; follow the next lecture for Docker.
