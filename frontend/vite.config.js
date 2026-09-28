@@ -6,6 +6,7 @@ export default defineConfig({
   // Teach Vite how to understand React (JSX) files.
   plugins: [react()],
   server: {
+    host: true,
     port: 5174,
     strictPort: true,
     // --- Proxy ------------------------------------------------------------

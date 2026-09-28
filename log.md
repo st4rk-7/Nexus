@@ -36,3 +36,8 @@ dates; 23–27 September do not represent completed lab sessions.
 
 - Documented startup, demo login, and verification steps for both members.
 - **Planned before 28/09:** practise the demonstration together; follow the next lecture for Docker.
+
+## 28/09/2026 — Frontend Design
+
+- Redesigned login and the IoT console with separate Devices and Firmware views, device search, status filtering, and mobile layouts.
+- Verified browser flows, session expiry, upload errors, production build, and six API tests.
