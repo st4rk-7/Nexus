@@ -41,3 +41,7 @@ dates; 23–27 September do not represent completed lab sessions.
 
 - Redesigned login and the IoT console with separate Devices and Firmware views, device search, status filtering, and mobile layouts.
 - Verified browser flows, session expiry, upload errors, production build, and six API tests.
+
+## 29/09/2026 — Docker Preparation
+
+- Prepared local Linux and Windows Docker setup guides; containers have not been built.
