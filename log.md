@@ -45,3 +45,8 @@ dates; 23–27 September do not represent completed lab sessions.
 ## 29/09/2026 — Docker Preparation
 
 - Prepared local Linux and Windows Docker setup guides; containers have not been built.
+
+## 30/09/2026 — Docker Containers
+
+- Built and started the frontend and backend with Docker Compose.
+- Checked the dashboard on port 8080 and backend health on port 3001.
