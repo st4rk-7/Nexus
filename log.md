@@ -46,7 +46,9 @@ dates; 23–27 September do not represent completed lab sessions.
 
 - Prepared local Linux and Windows Docker setup guides; containers have not been built.
 
-## 30/09/2026 — Docker Containers
+## 30/09/2026 — Docker Setup
 
-- Built and started the frontend and backend with Docker Compose.
+- Installed Docker on a personal computer.
+- Added Dockerfiles for the frontend and backend, an Nginx config, and a Docker Compose file.
+- Built and started both containers with Docker Compose.
 - Checked the dashboard on port 8080 and backend health on port 3001.
