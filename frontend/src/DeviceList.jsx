@@ -3,13 +3,11 @@ import { apiUrl } from "./api.js";
 import { Icon } from "./Icons.jsx";
 
 function seenAt(value) {
-  if (!value || Number.isNaN(new Date(value).getTime())) return "Not reported";
-  return new Date(value).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  if (!value || Number.isNaN(new Date(value).getTime())) return "Never";
+  const diffSec = Math.floor((Date.now() - new Date(value).getTime()) / 1000);
+  if (diffSec < 60) return `${diffSec}s ago`;
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
 export default function DeviceList({ token, onSessionExpired }) {
@@ -19,7 +17,7 @@ export default function DeviceList({ token, onSessionExpired }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [loaded, setLoaded] = useState(false);
-  const [checkedAt, setCheckedAt] = useState(null);
+
   const loadDevices = useCallback(
     async (signal) => {
       setLoading(true);
@@ -34,228 +32,152 @@ export default function DeviceList({ token, onSessionExpired }) {
           return;
         }
         const data = await response.json();
-        if (!response.ok)
-          throw new Error(data.error || "Could not load devices.");
-        setDevices(data.devices);
+        if (!response.ok) throw new Error(data.error || "Could not load devices.");
+        setDevices(data.devices || []);
         setLoaded(true);
-        setCheckedAt(new Date());
       } catch (err) {
-        if (err.name !== "AbortError")
-          setError(
-            "Could not refresh devices. Check your connection and try again.",
-          );
+        if (err.name !== "AbortError") {
+          setError("Connection failed. Check backend status.");
+        }
       } finally {
         if (!signal?.aborted) setLoading(false);
       }
     },
     [token, onSessionExpired],
   );
+
   useEffect(() => {
     const controller = new AbortController();
     loadDevices(controller.signal);
     return () => controller.abort();
   }, [loadDevices]);
-  const online = devices.filter((device) => device.status === "online").length;
+
+  const online = devices.filter((d) => d.status === "online").length;
 
   const visible = devices.filter(
-    (device) =>
-      (status === "all" || device.status === status) &&
-      `${device.name} ${device.type} ${device.currentFirmwareVersion}`
+    (d) =>
+      (status === "all" || d.status === status) &&
+      `${d.name} ${d.type} ${d.currentFirmwareVersion}`
         .toLowerCase()
         .includes(query.toLowerCase()),
   );
+
   return (
-    <section
-      id="devices"
-      className="device-section"
-      aria-labelledby="devices-title"
-    >
-      <div className="summary-strip">
-        {[
-          [
-            "Registered devices",
-            devices.length,
-            "All devices in this workspace",
-          ],
-          ["Online", online, "Recently checked in"],
-          ["Offline", devices.length - online, "No recent check-in"],
-        ].map(([label, value, hint], index) => (
-          <div className="summary-item" key={label}>
-            <div className="metric-header">
-              <span>{label}</span>
-              <span className={`metric-icon metric-${index}`}>
-                <Icon
-                  name={index === 0 ? "chip" : index === 1 ? "signal" : "info"}
-                  size={20}
-                />
-              </span>
-            </div>
-            <div className="summary-value">
-              {loaded ? value : "—"}
-              <span>{hint}</span>
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="section-toolbar">
-        <div className="section-title">
-          <h2 id="devices-title">Device inventory</h2>
-          <span className="count-pill">{loaded ? devices.length : "—"}</span>
+    <section id="devices" className="fleet-view">
+      {/* Dense Fleet Control Bar — No Big Metric Cards */}
+      <div className="fleet-strip mono">
+        <div className="fleet-stat">
+          <span className="dim-text">NODES</span>
+          <strong>{loaded ? devices.length : "—"}</strong>
         </div>
-        <button
-          className="secondary"
-          onClick={() => loadDevices()}
-          disabled={loading}
-        >
-          <Icon name="refresh" size={16} />
-          {loading ? "Refreshing…" : "Refresh"}
-        </button>
+        <span className="divider" />
+        <div className="fleet-stat">
+          <span className="dim-text">ONLINE</span>
+          <span className="green-text">● {loaded ? online : "—"}</span>
+        </div>
+        <span className="divider" />
+        <div className="fleet-stat">
+          <span className="dim-text">OFFLINE</span>
+          <span className="dim-text">{loaded ? devices.length - online : "—"}</span>
+        </div>
+        <span className="divider" />
+        <div className="fleet-stat">
+          <span className="dim-text">HEALTH</span>
+          <span className="cyan-text">{devices.length ? `${Math.round((online / devices.length) * 100)}%` : "100%"}</span>
+        </div>
+
+        <div className="fleet-strip-actions">
+          <button
+            className="secondary compact-btn mono"
+            onClick={() => loadDevices()}
+            disabled={loading}
+          >
+            <Icon name="refresh" size={14} />
+            {loading ? "SYNCING…" : "SYNC"}
+          </button>
+        </div>
       </div>
+
       {error && (
-        <p role="alert" className="message error">
-          {error} {loaded && "Showing the last loaded data."}
-        </p>
+        <div role="alert" className="message error mono">
+          [ERR] {error}
+        </div>
       )}
-      <div className="table-panel" aria-busy={loading}>
-        <div className="inventory-controls">
-          <div className="search-field">
-            <Icon name="search" size={18} />
+
+      {/* High Density Table */}
+      <div className="fleet-table-wrap">
+        <div className="table-filter-bar">
+          <div className="search-box">
+            <Icon name="search" size={15} />
             <input
-              aria-label="Search devices"
+              className="mono"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search by name, type or version…"
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Filter by identifier, architecture, version..."
             />
           </div>
-          <select
-            aria-label="Filter by connectivity status"
-            value={status}
-            onChange={(event) => setStatus(event.target.value)}
-          >
-            <option value="all">All statuses</option>
-            <option value="online">Online</option>
-            <option value="offline">Offline</option>
-          </select>
+          <div className="status-toggle mono">
+            {["all", "online", "offline"].map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={`filter-tab ${status === s ? "active" : ""}`}
+                onClick={() => setStatus(s)}
+              >
+                {s.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
-        <div
-          className="table-scroll"
-          tabIndex={0}
-          role="region"
-          aria-label="Device inventory table"
-        >
-          <table>
-            <caption className="sr-only">
-              Registered devices and their last reported connectivity
-            </caption>
+
+        <div className="table-container">
+          <table className="dense-table mono">
             <thead>
               <tr>
-                <th scope="col">Device name</th>
-                <th scope="col">Type</th>
-                <th scope="col">Firmware</th>
-                <th scope="col">Status</th>
-                <th scope="col">Last seen</th>
+                <th>DEVICE_IDENTIFIER</th>
+                <th>ARCHITECTURE</th>
+                <th>FIRMWARE</th>
+                <th>HEARTBEAT</th>
+                <th>STATE</th>
               </tr>
             </thead>
             <tbody>
               {visible.map((device) => (
                 <tr key={device._id}>
-                  <th scope="row">
-                    <span className="device-name">
-                      <span className="device-icon">
-                        <Icon name="chip" size={18} />
-                      </span>
-                      {device.name}
-                    </span>
-                  </th>
-                  <td>{device.type}</td>
                   <td>
-                    <span className="version mono">
-                      v{device.currentFirmwareVersion}
-                    </span>
+                    <div className="device-id-cell">
+                      <span className="chip-indicator" />
+                      <strong className="cyan-text">{device.name}</strong>
+                    </div>
                   </td>
                   <td>
-                    <span className={`badge badge-${device.status}`}>
-                      <span className="status-dot" />
-                      {device.status === "online" ? "Online" : "Offline"}
-                    </span>
+                    <span className="arch-tag">{device.type}</span>
                   </td>
-                  <td className="mono last-seen">
+                  <td>
+                    <span className="version-pill">v{device.currentFirmwareVersion}</span>
+                  </td>
+                  <td className="dim-text">
                     {seenAt(device.lastSeenAt)}
+                  </td>
+                  <td>
+                    <span className={`status-tag ${device.status}`}>
+                      {device.status === "online" ? "● ONLINE" : "○ OFFLINE"}
+                    </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
         {!visible.length && (
-          <div className="empty-state" role="status">
-            <span className="empty-icon">
-              <Icon name="chip" size={30} />
-            </span>
-            <h3>
-              {loading
-                ? "Loading your devices…"
-                : error
-                  ? "Device data is unavailable"
-                  : devices.length
-                    ? "No matching devices"
-                    : "Your fleet starts with one device"}
-            </h3>
-            <p>
-              {error
-                ? "Use Refresh to try loading the inventory again."
-                : loading
-                  ? "Retrieving the latest device information."
-                  : devices.length
-                    ? "Try a different search or select another status."
-                    : "Connect a device using the simulator. Once registered, it will appear here with its firmware and connection status."}
+          <div className="empty-fleet mono">
+            <Icon name="chip" size={24} />
+            <p className="dim-text">
+              {loading ? "POLLING ACTIVE FLEET..." : "NO DEVICES MATCH SPECIFIED FILTER"}
             </p>
-            {!loading && !error && !devices.length && (
-              <code className="simulator-command">bun simulator/device.js</code>
-            )}
           </div>
         )}
-        <div className="table-footer">
-          <span>
-            {loaded
-              ? `${visible.length} of ${devices.length} devices`
-              : "Waiting for device data"}
-          </span>
-          <span role="status">
-            {checkedAt
-              ? `Last refreshed ${checkedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-              : "Status is based on the last device check-in"}
-          </span>
-        </div>
-      </div>
-      <div className="inventory-notes">
-        <div>
-          <span className="note-icon">
-            <Icon name="signal" />
-          </span>
-          <div>
-            <h3>Understand connectivity</h3>
-            <p>
-              Online status reflects a recent device check-in. Refresh to
-              retrieve the latest reported state.
-            </p>
-          </div>
-        </div>
-        <div>
-          <span className="note-icon">
-            <Icon name="layers" />
-          </span>
-          <div>
-            <h3>Keep versions in view</h3>
-            <p>
-              Each device reports its current firmware version. Upload newer
-              firmware in the Firmware workspace.
-            </p>
-            <a href="#firmware">
-              Manage firmware <Icon name="arrow" size={15} />
-            </a>
-          </div>
-        </div>
       </div>
     </section>
   );

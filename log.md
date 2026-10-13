@@ -70,3 +70,27 @@ dates; 23–27 September do not represent completed lab sessions.
 - Added Dockerfiles for the frontend and backend, an Nginx config, and a Docker Compose file.
 - Built and started both containers with Docker Compose.
 - Checked the dashboard on port 8080 and backend health on port 3001.
+
+## 06/10/2026 — Docker Compose & Network Isolation
+
+**Author:** Shewon
+
+- Configured custom Docker bridge networks for the frontend Nginx reverse proxy and Bun backend.
+- Tuned container health checks and volume mounts for static firmware binary persistence.
+- Verified local multi-container orchestration across development environments with zero host port collisions.
+
+## 09/10/2026 — Device Fleet Simulator & API Load Testing
+
+**Author:** Akila
+
+- Enhanced the device simulation runner (`simulator/device.js`) to generate multi-architecture hardware traffic (ESP32, STM32, RP2040).
+- Validated concurrent check-in heartbeats and simulated firmware binary downloads against the running backend container.
+- Documented API latency and memory consumption during simultaneous OTA payload transfers.
+
+## 13/10/2026 — Developer Console & Technical UI Polish
+
+**Author:** Shewon and Akila
+
+- Overhauled both public and authenticated interfaces with a dark-technical console design system and token structure.
+- Integrated GSAP for scoped hardware telemetry transitions and micro-interactions.
+- Aligned CORS configurations across dev/prod container ports and verified authentication flows with automated browser captures.
