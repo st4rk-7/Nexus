@@ -22,12 +22,17 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+*.code-workspace
 
 # AI / agent files
 .agents/
 .claude/
+.codex/
+.gemini/
+.impeccable/
 AGENTS.md
 CLAUDE.md
+PRODUCT.md
 skills-lock.json
 
 # DevOps & cloud state files

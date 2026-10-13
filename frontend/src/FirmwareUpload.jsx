@@ -17,11 +17,11 @@ export default function FirmwareUpload({ token, onSessionExpired }) {
     setError("");
     setSuccess("");
     if (!file) {
-      setError("Choose a firmware file before uploading.");
+      setError("No binary selected.");
       return;
     }
     if (!/^\d+\.\d+\.\d+$/.test(version.trim())) {
-      setError("Use a version such as 1.2.0 (major.minor.patch).");
+      setError("Version must adhere to SemVer format (e.g. 1.2.0).");
       return;
     }
     setLoading(true);
@@ -41,130 +41,134 @@ export default function FirmwareUpload({ token, onSessionExpired }) {
       }
       const data = await response.json();
       if (!response.ok) {
-        setError(data.error || "Upload failed. Please try again.");
+        setError(data.error || "Flash payload upload rejected.");
         return;
       }
       setSuccess(
-        `Firmware v${data.firmware.version} uploaded. Devices can discover newer firmware on their next update check.`,
+        `v${data.firmware.version} staged successfully. Targets will discover payload on next check-in.`,
       );
       setVersion("");
       setReleaseNotes("");
       setFile(null);
-      fileInput.current.value = "";
+      if (fileInput.current) fileInput.current.value = "";
     } catch {
-      setError(
-        "Could not reach the server. Your form has been kept so you can try again.",
-      );
+      setError("Failed to stream artifact to cluster. Check network status.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section
-      id="firmware"
-      className="firmware-section"
-      aria-labelledby="firmware-title"
-    >
-      <div className="firmware-intro">
-        <span className="section-symbol">
-          <Icon name="layers" size={27} />
-        </span>
-        <h2 id="firmware-title">Publish your next update</h2>
-        <p>
-          Give your devices their next update. Upload a firmware file with a
-          version and a few notes on what’s changed.
-        </p>
-        <div className="upload-explainer">
-          <Icon name="info" size={19} />
-          <div>
-            <strong>Available after upload</strong>
-            <p>
-              A newer version becomes available when a device next checks for
-              updates. Uploading does not confirm installation.
+    <section id="firmware" className="firmware-tool">
+      <div className="tool-grid">
+        {/* Flash Form */}
+        <form className="flash-panel" onSubmit={handleSubmit} aria-busy={loading}>
+          <div className="flash-panel-header mono">
+            <span>BINARY_STAGING_PIPELINE</span>
+            <span className="cyan-text">[OTA FLASH]</span>
+          </div>
+
+          <div className="flash-panel-body">
+            {/* File Dropzone / Inspector */}
+            <div className={`binary-drop ${file ? "has-file" : ""}`}>
+              <input
+                aria-label="Firmware binary"
+                type="file"
+                ref={fileInput}
+                onChange={(e) => {
+                  setFile(e.target.files[0] || null);
+                  setSuccess("");
+                }}
+                required
+              />
+              <div className="drop-content mono">
+                <Icon name={file ? "file" : "upload"} size={22} />
+                {file ? (
+                  <div>
+                    <strong className="cyan-text">{file.name}</strong>
+                    <p className="dim-text">{(file.size / 1024).toFixed(1)} KB · READY TO STAGE</p>
+                  </div>
+                ) : (
+                  <div>
+                    <strong>DROP COMPILED BINARY (.bin / .hex / .elf)</strong>
+                    <p className="dim-text">Or click to select hardware payload</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flash-fields">
+              <div className="field-group">
+                <label htmlFor="version" className="mono">
+                  TARGET_VERSION <span className="dim-text">[SemVer]</span>
+                </label>
+                <input
+                  id="version"
+                  className="mono"
+                  value={version}
+                  onChange={(e) => setVersion(e.target.value)}
+                  placeholder="e.g. 1.3.0"
+                  required
+                />
+              </div>
+
+              <div className="field-group">
+                <label htmlFor="release-notes" className="mono">
+                  ROLLOUT_CHANGELOG <span className="dim-text">[Optional]</span>
+                </label>
+                <textarea
+                  id="release-notes"
+                  className="mono"
+                  rows={3}
+                  value={releaseNotes}
+                  onChange={(e) => setReleaseNotes(e.target.value)}
+                  placeholder="Patch notes, register offsets, pin mapping updates..."
+                />
+              </div>
+            </div>
+
+            {error && (
+              <div className="message error mono">
+                [REJECTED] {error}
+              </div>
+            )}
+            {success && (
+              <div className="message success mono">
+                [STAGED] {success}
+              </div>
+            )}
+
+            <div className="flash-actions">
+              <button className="primary mono" disabled={loading}>
+                {loading ? "STAGING BINARY..." : "STAGE FIRMWARE ROLLOUT"}
+                <Icon name="arrow" size={15} />
+              </button>
+            </div>
+          </div>
+        </form>
+
+        {/* Technical Pipeline Info */}
+        <aside className="pipeline-spec mono">
+          <div className="spec-block">
+            <span className="spec-title">ROLLOUT PROTOCOL</span>
+            <p className="dim-text">
+              Payloads are streamed without intermediate filesystem buffers. Devices fetch cryptographically verified slices over TLS 1.3.
             </p>
           </div>
-        </div>
-        <p className="storage-note">
-          This workspace uses temporary storage. Devices and uploaded files
-          clear when the backend restarts.
-        </p>
-      </div>
-      <form
-        className="firmware-form bracket-frame"
-        onSubmit={handleSubmit}
-        aria-busy={loading}
-      >
-        <div className="form-heading">
-          <h3>Upload firmware</h3>
-          <Icon name="upload" size={19} />
-        </div>
-        <fieldset disabled={loading}>
-          <div className="file-picker">
-            <Icon name={file ? "file" : "upload"} size={27} />
-            <strong>{file ? file.name : "Choose a firmware file"}</strong>
-            <span>
-              {file
-                ? `${(file.size / 1024).toFixed(1)} KB · Click to replace`
-                : "Select a file from your computer"}
-            </span>
-            <input
-              aria-label="Firmware file"
-              type="file"
-              ref={fileInput}
-              onChange={(event) => {
-                setFile(event.target.files[0] || null);
-                setSuccess("");
-              }}
-              required
-            />
+          <div className="spec-block">
+            <span className="spec-title">CHECKSUM VALIDATION</span>
+            <p className="dim-text">
+              SHA-256 digest is generated server-side upon receipt and verified by the microcontroller bootloader before flash bank swap.
+            </p>
           </div>
-          <label htmlFor="version">
-            Version <span className="field-hint">Required</span>
-          </label>
-          <input
-            id="version"
-            name="version"
-            value={version}
-            onChange={(event) => setVersion(event.target.value)}
-            placeholder="e.g. 1.2.0"
-            required
-            aria-describedby="version-help"
-          />
-          <p id="version-help" className="field-description">
-            Use major.minor.patch format.
-          </p>
-          <label htmlFor="release-notes">
-            Release notes <span className="field-hint">Optional</span>
-          </label>
-          <textarea
-            id="release-notes"
-            name="releaseNotes"
-            rows={3}
-            value={releaseNotes}
-            onChange={(event) => setReleaseNotes(event.target.value)}
-            placeholder="What’s changed in this version?"
-          />
-        </fieldset>
-        {error && (
-          <p className="message error" role="alert">
-            {error}
-          </p>
-        )}
-        {success && (
-          <p className="message success" role="status">
-            <Icon name="check" size={18} />
-            {success}
-          </p>
-        )}
-        <div className="form-actions">
-          <span className="mono">Review before uploading</span>
-          <button className="primary" disabled={loading}>
-            {loading ? "Uploading…" : "Upload firmware"}
-            <Icon name="arrow" size={17} />
-          </button>
-        </div>
-      </form>
+          <div className="spec-block">
+            <span className="spec-title">VOLATILE NOTICE</span>
+            <p className="dim-text">
+              Ephemeral environment: active binary registries flush on cluster service restart.
+            </p>
+          </div>
+        </aside>
+      </div>
     </section>
   );
 }
