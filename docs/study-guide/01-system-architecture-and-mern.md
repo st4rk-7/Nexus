@@ -6,7 +6,7 @@
 
 Nexus provides a central place to register IoT devices, view their last reported firmware and activity, and upload firmware releases. A device asks the server whether a newer release exists and downloads it. OTA means **over the air**: transferring an update over a network instead of connecting a programming cable.
 
-The implemented demonstration covers update discovery and download. It does not flash a microcontroller, reboot hardware or confirm a successful installation.
+The implemented demonstration covers update discovery, download and an install report. The simulator does not flash a microcontroller or reboot hardware, so its report is a claim the server records, not proof of a working install.
 
 ## The three layers
 
@@ -20,7 +20,7 @@ flowchart LR
 
 - **Presentation:** React displays forms and devices. It collects input and shows results.
 - **Application:** Express checks requests, enforces permissions, compares versions and coordinates storage.
-- **Data:** MongoDB stores administrators, devices and release metadata; firmware files are kept on the backend's local disk.
+- **Data:** MongoDB stores administrators, devices, release metadata and update logs; firmware files are kept on the backend's local disk.
 
 The simulator is another API client. It does not need React. The browser does not connect directly to Atlas because database credentials and access rules belong on the backend.
 
@@ -52,9 +52,9 @@ Bootstrap supplies ready-made CSS components and layout utilities; Tailwind supp
 
 When an administrator requests the device list:
 
-1. `DeviceList.jsx` calls `fetch('/api/devices')`; this list route is currently public.
+1. `DeviceList.jsx` calls `/api/devices?search=…&status=…&sort=…` through the shared `api()` helper; this list route is public.
 2. The local Vite proxy forwards the request to Express.
-3. The controller queries devices and returns their stored status.
+3. The controller first marks devices that have been silent for 5 minutes as offline, then queries with the search, status filter and sort order.
 4. Express returns JSON; React stores the array in state and renders table rows.
 
 This separation makes changes easier to locate: layout belongs in React, permission checks in middleware, and database queries in backend code.

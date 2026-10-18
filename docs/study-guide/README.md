@@ -10,7 +10,7 @@ The sheet lists 3 credits, 30 lecture hours, 24 workshop hours, and these topics
 
 **Assessment discrepancy:** the sheet lists 40% continuous assessment quizzes and 60% end-semester assessment (30% project evaluation + 30% quiz). The separate [course announcement](../../instruction.md) uses EE4207 and says project plus viva, with no written exam. Confirm the current module code and assessment arrangement with the lecturer; neither document proves guaranteed hosting bonus marks.
 
-These chapters describe the `main` branch at commit `9335ff5`. They distinguish implemented behavior from features that still need work.
+These chapters describe the current `main` branch: full device CRUD with search, filter and sort; the UpdateLog relationship between devices and firmware; last-seen online/offline status; and validation in both the browser and the server. They distinguish implemented behavior from features that still need work.
 
 ## Reading order and learning outcomes
 
@@ -18,7 +18,7 @@ These chapters describe the `main` branch at commit `9335ff5`. They distinguish 
 |---|---|---|
 | [01 — Architecture and frameworks](01-system-architecture-and-mern.md) | The problem, layers, stack, alternatives and request flow | LO1, LO2, LO4 |
 | [02 — HTTP and REST](02-http-and-restful-apis.md) | Methods, headers, status codes, REST principles and every endpoint | LO1, LO3 |
-| [03 — Backend and database](03-backend-and-database.md) | Routes, middleware, controllers, models and local firmware files | LO1, LO2, LO4 |
+| [03 — Backend and database](03-backend-and-database.md) | Routes, middleware, controllers, models, relationships and local firmware files | LO1, LO2, LO4 |
 | [04 — Authentication and security](04-authentication-and-security.md) | Password hashes, JWT, API keys, permissions and limitations | LO3 |
 | [05 — HTML, CSS and React](05-frontend-and-react.md) | Components, state, props, effects, forms and styling | LO1, LO2, LO4 |
 | [06 — Firmware and simulator](06-ota-firmware-and-simulator.md) | Version selection, file transfer, status tracking and demo scope | LO3, LO4 |

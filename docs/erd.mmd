@@ -1,0 +1,40 @@
+erDiagram
+    ADMIN |o--o{ FIRMWARE : "uploads"
+    DEVICE ||--o{ UPDATELOG : "reports"
+    FIRMWARE ||--o{ UPDATELOG : "is installed in"
+
+    ADMIN {
+        ObjectId _id PK
+        string username UK
+        string password "bcrypt hash"
+        date createdAt
+        date updatedAt
+    }
+    DEVICE {
+        ObjectId _id PK
+        string name UK "2-50 chars"
+        string type
+        string apiKey UK "hidden from reads"
+        string currentFirmwareVersion "x.y.z"
+        string status "online | offline"
+        date lastSeen
+        date createdAt
+        date updatedAt
+    }
+    FIRMWARE {
+        ObjectId _id PK
+        string version UK "x.y.z"
+        string releaseNotes
+        string filePath
+        boolean isActive
+        ObjectId uploadedBy FK "-> ADMIN"
+        date createdAt
+        date updatedAt
+    }
+    UPDATELOG {
+        ObjectId _id PK
+        ObjectId device FK "-> DEVICE"
+        ObjectId firmware FK "-> FIRMWARE"
+        string fromVersion
+        date createdAt "install time"
+    }

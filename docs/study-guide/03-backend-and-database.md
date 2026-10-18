@@ -30,21 +30,33 @@ MongoDB stores documents in collections. BSON is its binary document format; it 
 | Model | Key fields | Purpose |
 |---|---|---|
 | [`Admin`](../../backend/models/Admin.js) | Unique username, password hash, timestamps | Human administrator identity |
-| [`Device`](../../backend/models/Device.js) | Unique name, type, API key, current version, status | Registry record |
-| [`Firmware`](../../backend/models/Firmware.js) | Unique version, filePath, notes, isActive | Release metadata and local file path |
+| [`Device`](../../backend/models/Device.js) | Unique name, type, API key, current version, status, lastSeen | Registry record |
+| [`Firmware`](../../backend/models/Firmware.js) | Unique version, filePath, notes, isActive, uploadedBy | Release metadata and local file path |
+| [`UpdateLog`](../../backend/models/UpdateLog.js) | device, firmware, fromVersion, createdAt | One reported install |
 
-`required`, types and patterns validate document fields. `unique: true` requests a database unique index; it is not a general-purpose Mongoose validator. Controllers also check duplicates to return readable errors, although concurrent requests can still race.
+`required`, `minlength`, `maxlength`, `match` (a regular expression) and `enum` validate document fields, each with a readable message. `unique: true` requests a database unique index; it is not a validator. A duplicate device name therefore comes back from MongoDB as error code 11000, which the controller turns into `409 Conflict`. Using the index instead of a "find first" check also avoids a race between two simultaneous requests.
 
-`find()` returns matching records, `findOne()` finds one and `create()` saves a new document. ObjectIds identify records. The firmware document's `filePath` points to a file on the backend's disk.
+`find()` returns matching records, `findOne()` finds one and `create()` saves a new document. `findByIdAndUpdate(..., { runValidators: true })` edits a record with the same rules as creation, and `findByIdAndDelete()` removes one. ObjectIds identify records. The firmware document's `filePath` points to a file on the backend's disk.
+
+## Relationships between collections
+
+![Entity relationship diagram](../images/erd.png)
+
+MongoDB has no foreign-key constraints, but a field can store another document's ObjectId with `ref`, and `populate()` swaps that id for the referenced document when reading.
+
+- **Admin → Firmware (one to many):** `Firmware.uploadedBy` stores the uploading admin's id. The release list populates it to show the username.
+- **Device → UpdateLog ← Firmware:** a device can install many releases and a release can be installed on many devices. That many-to-many relationship is stored as a separate UpdateLog collection, one document per install, each referencing one device and one firmware. The device detail view populates the firmware version for each log.
+
+Because there are no database-level constraints, the application keeps references consistent: deleting a device also deletes its UpdateLogs.
 
 ## Where the firmware file goes
 
 [`firmwareRoutes.js`](../../backend/routes/firmwareRoutes.js) uses Multer disk storage in `backend/uploads/`. The controller saves the path in the Firmware document, and the download route serves the file from that path.
 
-The upload route first authenticates the administrator. Multer then writes one file to disk. The controller checks that a version was provided and not already recorded, then saves metadata. There is no upload size limit or cleanup if metadata saving fails.
+The upload route first authenticates the administrator. Multer then writes one file to disk. The controller checks that a version was provided, is not already recorded and matches `x.y.z`, then saves metadata. If any check fails, the controller deletes the file Multer already saved, so rejected uploads do not pile up. There is still no upload size limit.
 
 Local disk means the firmware metadata and binary must stay together on the same backend machine. GridFS or object storage could be explored later, but neither is implemented in this commit.
 
 Express `res.download()` reads the stored file path and sends it to the client.
 
-**Self-check:** What happens if the file in `backend/uploads/` is deleted but its MongoDB record remains? The release metadata still exists, but the download fails.
+**Self-check:** What happens if the file in `backend/uploads/` is deleted but its MongoDB record remains? The release metadata still exists, but the download returns `404` with a message saying the file is missing.

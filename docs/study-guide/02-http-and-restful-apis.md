@@ -43,9 +43,9 @@ REST is an architectural style, not a library or a synonym for JSON.
 | Layered system | The browser reaches Express through Vite's local proxy |
 | Optional code on demand | A server may supply executable client code; not required for an API |
 
-Nexus uses resource routes such as `/api/firmware` and action routes such as `/check-update`. It is a practical REST-style API, not a demonstration of every REST constraint. The current `check-update` route reads the device's version but does not save a new version or last-seen time.
+Nexus uses resource routes such as `/api/firmware` and action routes such as `/check-update`. It is a practical REST-style API, not a demonstration of every REST constraint. `check-update` also records the device's last-seen time. A separate `report-update` call saves the newly installed version and an UpdateLog record.
 
-GET reads a resource. POST creates or processes data. PUT replaces, PATCH partially updates and DELETE removes a resource; the last three are concepts from HTTP, not implemented Nexus endpoints. Idempotence means repeating a request has the same intended effect as doing it once. Repeated device registration is not a safe retry strategy: duplicate names are rejected.
+GET reads a resource. POST creates or processes data. PUT replaces and DELETE removes a resource: Nexus uses `PUT /api/devices/:id` to edit a device and `DELETE /api/devices/:id` to remove one. PATCH (partial update) is not used. Idempotence means repeating a request has the same intended effect as doing it once. Repeated device registration is not a safe retry strategy: duplicate names are rejected.
 
 ## Endpoint reference
 
@@ -56,22 +56,27 @@ Paths are relative to the backend origin.
 | `GET /health` | Public | `200`: process response |
 | `POST /api/auth/register` | Public | `username`, `password`; `201` with token; currently permits additional administrators |
 | `POST /api/auth/login` | Public | `username`, `password`; `200` with username and token |
-| `GET /api/devices` | Public | `200`: `{count, devices}` |
+| `GET /api/devices` | Public | Optional `search`, `status`, `sort` query; `200`: `{count, devices}` |
 | `POST /api/devices/register` | Public | `name`, `type`, optional `currentFirmwareVersion`; `201` with device and API key |
-| `POST /api/devices/check-update` | Device API key | Optional current version; `200` with update decision |
+| `GET /api/devices/:id` | Public | `200`: `{device, updates}` (update history, newest first) |
+| `PUT /api/devices/:id` | Admin JWT | `name`, `type`, `currentFirmwareVersion`, `status`; `200` with the updated device |
+| `DELETE /api/devices/:id` | Admin JWT | `200`; also deletes the device's update history |
+| `POST /api/devices/check-update` | Device API key | Optional current version; `200` with update decision; records last-seen |
+| `POST /api/devices/report-update` | Device API key | `firmwareId`; `201`; saves the new version and an UpdateLog |
 | `POST /api/firmware` | Admin JWT | Multipart `file`, `version`, optional `releaseNotes`; `201` with firmware metadata |
-| `GET /api/firmware` | Public | `200`: `{count, firmwares}` |
+| `GET /api/firmware` | Public | `200`: `{count, firmwares}` with each uploader's username |
 | `GET /api/firmware/:id/download` | Public | `200`: firmware binary when available |
 
 Admin requests use `Authorization: Bearer <token>`. Device check-ins use `x-api-key: <key>`. These credentials are not interchangeable.
 
 ## Interpreting errors
 
-- **400:** missing required fields or duplicate name/version.
+- **400:** a field failed validation (for example a name that is too short or a version that is not `x.y.z`), or a malformed id such as `/api/devices/abc`. The message names the problem.
 - **401:** missing, invalid or expired credentials.
-- **404:** release metadata was not found; a missing local file is currently reported as a server error.
-- **500:** an internal operation failed.
+- **404:** the device or release does not exist, or a release's file is missing on the server.
+- **409:** the device name or firmware version is already taken.
+- **500:** an unexpected internal failure.
 
-The code does not validate version format or upload size. A malformed MongoDB ID or malformed JSON may also be reported as a server error. Explain actual behavior rather than claiming complete input validation.
+The same rules run in the browser (HTML `required`, `minLength`, `pattern`) and on the server (Mongoose schema). The browser checks are for convenience; the server checks are the real protection, because any client can skip the browser. Upload size is still not limited.
 
 **Self-check:** Does a `200` from `/health` prove that a firmware file can be downloaded? No: it only confirms the server responded to that request.

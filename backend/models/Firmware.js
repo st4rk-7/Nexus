@@ -8,9 +8,10 @@ const firmwareSchema = new mongoose.Schema(
     // E.g., "1.1.0"
     version: {
       type: String,
-      required: true,
+      required: [true, "Version is required"],
       unique: true,
       trim: true,
+      match: [/^\d+\.\d+\.\d+$/, "Version must look like 1.2.0"],
     },
     // Notes about what changed in this version
     releaseNotes: {

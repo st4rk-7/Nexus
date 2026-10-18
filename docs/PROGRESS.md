@@ -14,7 +14,7 @@ Update it at the end of every work block.
 
 ---
 
-## The 8 phases
+## The phases
 
 ### Phase 0 — Foundations & setup  `[x]`
 **Goal:** understand the architecture and get an empty-but-runnable backend.
@@ -88,7 +88,38 @@ code into models / routes / services (LO1).
 **Goal:** be able to justify every design decision (LO4) and pass the evaluation.
 **Done when:**
 - [x] study guide explains the architecture and current limitations
+- [x] README with setup steps, ERD and screenshots
 - [ ] can explain every file in the repo
+- [ ] mini project report (max 10 pages) and demo video (max 5 minutes)
+
+### Phase 8 — Full device CRUD  `[x]`
+**Goal:** meet the rubric's CRUD requirement on the Device entity.
+**Explain:** REST methods (GET/POST/PUT/DELETE), validation on both client and server, status codes.
+**Done when:**
+- [x] create (dashboard form + device self-registration)
+- [x] read: list with search, status filter and sort; detail view
+- [x] update (`PUT /api/devices/:id`, admin only)
+- [x] delete with confirmation (`DELETE /api/devices/:id`, admin only)
+- [x] schema validation with readable 400/404/409 errors; `bun test` covers the rules
+
+### Phase 9 — Database relationships  `[x]`
+**Goal:** connect the collections so the design shows real relationships (rubric: database design).
+**Explain:** ObjectId references, `populate()`, modelling many-to-many with a join collection.
+**Done when:**
+- [x] `Firmware.uploadedBy` → Admin
+- [x] `UpdateLog` (device + firmware + fromVersion), written by `POST /api/devices/report-update`
+- [x] simulator reports the install; device detail shows update history
+- [x] deleting a device deletes its logs
+- [x] ERD in `docs/images/erd.png` (source `docs/erd.mmd`)
+
+### Phase 10 — Interface redesign  `[x]`
+**Goal:** a clear, consistent, responsive dashboard (rubric: UI/UX).
+**Done when:**
+- [x] one visual system (tokens in `index.css`), self-hosted fonts
+- [x] login, fleet, detail and forms restyled; layout works at phone width
+- [x] public landing page and logo, taken from the DevOps version's design
+- [x] text contrast meets 4.5:1
+- [x] devices go offline after 5 minutes without a check-in (`lastSeen`)
 
 ---
 
@@ -113,15 +144,22 @@ code into models / routes / services (LO1).
   package.json + node_modules; always use `--prefix <dir>` (or run inside the dir). Cleaned up.
 - **Security model:** admins = bcrypt-hashed passwords + JWT (Authorization: Bearer). Devices
   = per-device random apiKey (x-api-key header), stored select:false so it never leaks on reads.
+- **Validation in the schema:** rules live once in the Mongoose models (length, `x.y.z` pattern,
+  enum); the controller maps ValidationError → 400 and duplicate key 11000 → 409. The React forms
+  repeat the rules as HTML constraints for instant feedback only.
+- **UpdateLog as a join collection:** device ↔ firmware is many-to-many, so each install is its own
+  document. MongoDB has no foreign keys, so deleting a device deletes its logs in the controller.
+- **Offline status from lastSeen:** check-ins set `lastSeen`; reads mark devices silent for 5 minutes
+  offline. Chosen over a background timer because it needs no extra process.
+- **Shared database warning:** the DevOps version (`devops` branch) must use its own database name in
+  `MONGODB_URI`; on 2026-10-19 it published firmware 6.0.0 into this version's database.
 
 ## Current state
-- **Phase 4 COMPLETE.** Admin JWT login + bcrypt password hashing; firmware upload
-  is admin-only (protect middleware); devices authenticate with a per-device apiKey
-  on check-update. All auth paths tested (no/valid/forged credentials).
-- **Phase 6 COMPLETE.** Simulator script (`bun simulator/device.js`) proves the full
-  OTA loop: register → check update → download. Works end-to-end against the live backend.
-- **Phase 7 IN PROGRESS.** The study guide is available for review and viva preparation.
+- **Phases 0–6 and 8–10 COMPLETE.** Full device CRUD with search, filter and sort; validation on
+  both sides; Admin → Firmware and Device ↔ Firmware (UpdateLog) relationships; simulator runs the
+  whole loop including the install report; redesigned, responsive dashboard.
+- **Phase 7 IN PROGRESS.** README (setup, ERD, screenshots) and study guide are current.
 
 ## Next action
-Read the study guide, run the local application, and check each explanation
-against the code and simulator output.
+Upload a real firmware release from the dashboard, run the simulator once to check the demo
+works end to end, then write the report and record the demo video (due 31 October 2026).

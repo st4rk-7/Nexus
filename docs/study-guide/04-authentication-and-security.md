@@ -4,7 +4,7 @@
 
 ## Identity versus permission
 
-**Authentication** checks who is calling. **Authorization** checks whether that caller may perform an operation. In this version, firmware upload requires an admin JWT and update checking requires a device key. Device listing, firmware listing, registration and download are public. There is no configurable multi-role permission system.
+**Authentication** checks who is calling. **Authorization** checks whether that caller may perform an operation. In this version, firmware upload and editing or deleting a device require an admin JWT; update checking and install reporting require a device key. Device listing and details, firmware listing, registration and download are public. There is no configurable multi-role permission system.
 
 Hiding a button in React is not authorization. Requests can be sent with curl or another program, so the backend must enforce access.
 
@@ -42,6 +42,6 @@ CORS concerns browser access across origins (scheme, host and port). Vite's loca
 
 `localStorage` is simple but readable by JavaScript running on the page, so XSS could steal a token. HttpOnly cookies offer a different tradeoff and require suitable CSRF handling. HTTPS protects credentials in transit.
 
-Nexus has basic required-field checks, but no version-format validation, file-size limit, rate limiting, private firmware downloads, signed firmware verification or restricted enrollment. Public admin registration is the most serious limitation. These are honest improvement points for a viva, not completed features.
+Nexus validates device names, types, version formats and statuses on the server through its Mongoose schemas, but has no file-size limit, rate limiting, private firmware downloads, signed firmware verification or restricted enrollment. Public admin registration is the most serious limitation. These are honest improvement points for a viva, not completed features.
 
 **Self-check:** Does knowing a firmware download URL require a JWT? No: downloads are currently public. Does possession of a device key permit firmware upload? No: upload requires an administrator token.

@@ -5,6 +5,13 @@ import { Firmware } from "../models/Firmware.js";
 import path from "path";
 import fs from "fs";
 
+// Multer has already saved the file by the time we validate, so a rejected
+// upload must delete it or uploads/ fills with orphan files.
+function rejectUpload(req, res, status, message) {
+  if (req.file) fs.rmSync(req.file.path, { force: true });
+  return res.status(status).json({ error: message });
+}
+
 // @desc    Upload a new firmware version
 // @route   POST /api/firmware
 export const uploadFirmware = async (req, res) => {
@@ -16,18 +23,15 @@ export const uploadFirmware = async (req, res) => {
 
     const { version, releaseNotes } = req.body;
     if (!version) {
-      return res.status(400).json({ error: "Please provide a version string (e.g., '1.1.0')" });
+      return rejectUpload(req, res, 400, "Please provide a version string (e.g., '1.1.0')");
     }
 
     // Check if version already exists
     const existing = await Firmware.findOne({ version });
     if (existing) {
-      return res.status(400).json({ error: `Firmware version ${version} already exists` });
+      return rejectUpload(req, res, 409, `Firmware version ${version} already exists`);
     }
 
-    // Usually when we upload a new firmware, we might want to make older ones inactive.
-    // For now, let's just save it.
-    
     // Save the file path so we know where to find it for download later
     const newFirmware = await Firmware.create({
       version,
@@ -41,8 +45,13 @@ export const uploadFirmware = async (req, res) => {
       firmware: newFirmware,
     });
   } catch (error) {
+    // Schema rules (e.g. version format) failed -> the client sent bad data
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((e) => e.message);
+      return rejectUpload(req, res, 400, messages.join(". "));
+    }
     console.error("Error uploading firmware:", error);
-    res.status(500).json({ error: "Server error during upload" });
+    rejectUpload(req, res, 500, "Server error during upload");
   }
 };
 
