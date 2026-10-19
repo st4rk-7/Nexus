@@ -94,3 +94,14 @@ dates; 23–27 September do not represent completed lab sessions.
 - Overhauled both public and authenticated interfaces with a dark-technical console design system and token structure.
 - Integrated GSAP for scoped hardware telemetry transitions and micro-interactions.
 - Aligned CORS configurations across dev/prod container ports and verified authentication flows with automated browser captures.
+
+## 19/10/2026 — Web Development Sync & Dockerized Simulation Pipeline
+
+**Author:** Shewon and Akila
+
+- Merged web development updates from `main` into the DevOps pipeline, integrating Mongoose models, full device CRUD operations, and firmware installation history logs.
+- Synchronized the React frontend with full device creation/editing, detailed telemetry views, and dynamic firmware releases tracking.
+- Resolved Docker multi-stage build lockfile compatibility issues by upgrading base runtime images to latest Bun releases.
+- Configured dedicated Docker volume persistence (`uploads_data`) for uploaded firmware binaries to prevent data loss across container recreations.
+- Containerized the end-to-end device simulator under a dedicated Docker Compose profile (`sim`), allowing lab computers without host Node/Bun installations to execute the complete OTA registration, check-update, binary download, and installation reporting lifecycle.
+
