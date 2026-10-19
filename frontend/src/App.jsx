@@ -1,9 +1,9 @@
 // App.jsx — the top-level component. It decides what to show:
-//   - not logged in  -> the Login form
+//   - not logged in  -> the 3D WebGL / GSAP Landing Hero (with toggleable Login)
 //   - logged in      -> the dashboard (devices, firmware upload, releases)
 
 import { useState } from "react";
-import Login from "./Login.jsx";
+import LandingHero from "./LandingHero.jsx";
 import DeviceList from "./DeviceList.jsx";
 import FirmwareUpload from "./FirmwareUpload.jsx";
 import Wordmark from "./Wordmark.jsx";
@@ -17,7 +17,7 @@ function App() {
   // Bumped after each upload so the Releases list remounts and re-fetches.
   const [releasesKey, setReleasesKey] = useState(0);
 
-  // Called by <Login /> after a successful login.
+  // Called after a successful login.
   function handleLogin(newToken, newUsername) {
     setToken(newToken);
     setUsername(newUsername);
@@ -32,8 +32,8 @@ function App() {
     localStorage.removeItem("username");
   }
 
-  // If we have no token, show the login screen. Otherwise, the dashboard.
-  if (!token) return <Login onLogin={handleLogin} />;
+  // If not logged in, render the 3D Landing Hero (which embeds Login on click)
+  if (!token) return <LandingHero onLogin={handleLogin} />;
 
   return (
     <>
