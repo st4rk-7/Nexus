@@ -1,11 +1,20 @@
-// Local development leaves this empty and uses Vite's /api proxy.
-// Set VITE_API_URL only when serving the backend at a different address.
-const configuredBaseUrl = import.meta.env.VITE_API_URL?.trim();
+// api.js — one helper for JSON calls to the backend, so every component
+// handles headers, the JWT token, and error messages the same way.
 
-export const API_BASE_URL = configuredBaseUrl
-  ? configuredBaseUrl.replace(/\/+$/, "")
-  : "";
+export async function api(path, { method = "GET", token, body } = {}) {
+  const headers = {};
+  if (body) headers["Content-Type"] = "application/json";
+  if (token) headers.Authorization = `Bearer ${token}`;
 
-export function apiUrl(path) {
-  return `${API_BASE_URL}${path}`;
+  let res;
+  try {
+    res = await fetch(path, { method, headers, body: body && JSON.stringify(body) });
+  } catch {
+    throw new Error("Could not reach the server.");
+  }
+
+  // Some error responses may not be JSON; fall back to an empty object.
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  return data;
 }

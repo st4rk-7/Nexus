@@ -1,85 +1,56 @@
-# Nexus — DevOps Coursework
+# Nexus — DevOps & Web Development Coursework
 
-EC5207 · Group 72 · EG/2023/5890 and EG/2023/5893
+A web platform for managing IoT devices and deploying firmware updates over the air (OTA).
+Admins register devices, manage releases, and monitor fleet status. Devices check in over a REST API, verify firmware versions, download updates, and report installation logs.
 
-Reuses the Nexus web application from `main` (`b7695d9`) for DevOps practicals.
-Work here on `devops`; the original web project stays on `main`.
-Next lecture: **28 September 2026**. Containerization will follow the lecture.
+## Tech Stack
 
-## How it works
+- **Backend:** Express on Bun with Mongoose (MongoDB Atlas)
+- **Frontend:** React + Vite
+- **Containers:** Docker & Docker Compose (Nginx frontend reverse proxy + Node/Bun backend + simulator profile)
+- **Authentication:** JWT for administrators, API keys (`x-api-key`) for IoT devices
 
-- **Frontend:** React + Vite displays login, devices, and firmware upload.
-- **Backend:** Express on Bun handles authentication, devices, and firmware.
-- **Storage:** temporary backend memory. No database or MongoDB cluster is required.
-- **Simulator:** acts as a device to register, check updates, and download firmware.
+## Services & Ports
 
-Restarting the backend clears all devices, uploads, and sessions. The configured
-lab account is recreated at startup. Log out and log back in after a restart.
-This simple lab setup is intended for one backend process.
+- **Frontend (Dev):** `http://localhost:5174` (proxies `/api` to port 3001)
+- **Frontend (Docker):** `http://localhost:8080`
+- **Backend API:** `http://localhost:3001` (health check: `/health`)
 
-## Run locally
+## Run with Docker Compose
 
-Install Bun first. Open two terminals in the project folder.
+```sh
+docker compose up -d
+```
 
-**Terminal 1 — backend**
+To run the device simulator inside Docker (no local Bun/Node required on lab PCs):
+
+```sh
+docker compose run --rm simulator
+```
+
+## Run Locally with Bun
+
+**Terminal 1 — Backend:**
 
 ```sh
 cd backend
-bun install --frozen-lockfile
-cp .env.example .env
-```
-
-Run `openssl rand -hex 32` and put its output into `JWT_SECRET` in `.env`.
-Copy `.env.example` only on first setup; keep `.env` private.
-
-```sh
+bun install
+cp .env.example .env # set MONGODB_URI and JWT_SECRET
 bun run dev
 ```
 
-Backend: http://localhost:3001 · Health check: http://localhost:3001/health
-
-**Terminal 2 — frontend**
+**Terminal 2 — Frontend:**
 
 ```sh
 cd frontend
-bun install --frozen-lockfile
+bun install
 bun run dev
 ```
 
-Open http://localhost:5174. No frontend `.env` is needed; Vite forwards `/api`
-requests to the backend. These ports keep the two Nexus versions separate.
+Visit `http://localhost:5174`.
 
-Local demo login from `backend/.env.example`: **admin / nexus-lab-2026**.
-Change `ADMIN_USERNAME` and `ADMIN_PASSWORD` in `.env` to use another account.
-
-## Verify the application
-
-1. Log in and upload a small test file as firmware version `1.1.0`.
-2. In a third terminal, from the project root, run `bun simulator/device.js`.
-3. Confirm the simulator registers, finds the update, and downloads the file.
-4. Refresh the dashboard to see the registered device.
-
-Upload limits: 10 MB per file and 50 MB total temporary firmware storage.
-
-Automated checks:
+**Terminal 3 — Device Simulator:**
 
 ```sh
-cd backend
-bun test
+bun simulator/device.js
 ```
-
-From a separate terminal at the project root:
-
-```sh
-cd frontend
-bun run build
-```
-
-## Working together
-
-- One member runs the app; the other traces a request and records the result.
-- Swap roles so both can explain frontend → API → temporary storage.
-- Commit and push before leaving the lab. Pull before starting another session.
-- Add only work actually completed to [log.md](log.md); label future tasks as planned.
-
-Before September 28: both members should practise startup and the demonstration.

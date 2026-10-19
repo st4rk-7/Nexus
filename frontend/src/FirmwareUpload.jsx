@@ -1,174 +1,108 @@
-import { useRef, useState } from "react";
-import { apiUrl } from "./api.js";
-import { Icon } from "./Icons.jsx";
+// FirmwareUpload.jsx — admin-only form to upload a new firmware version.
+// Sends a file + metadata to POST /api/firmware with the JWT token attached.
 
-export default function FirmwareUpload({ token, onSessionExpired }) {
+import { useState } from "react";
+
+// `token` (the admin's JWT) is passed in from App. `onUploaded` lets the
+// parent react after a successful upload (e.g. refresh a list later).
+function FirmwareUpload({ token, onUploaded }) {
   const [version, setVersion] = useState("");
   const [releaseNotes, setReleaseNotes] = useState("");
   const [file, setFile] = useState(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-  const fileInput = useRef(null);
 
   async function handleSubmit(event) {
     event.preventDefault();
-    if (loading) return;
     setError("");
     setSuccess("");
+
     if (!file) {
-      setError("No binary selected.");
-      return;
-    }
-    if (!/^\d+\.\d+\.\d+$/.test(version.trim())) {
-      setError("Version must adhere to SemVer format (e.g. 1.2.0).");
+      setError("Please choose a firmware file.");
       return;
     }
     setLoading(true);
+
     try {
+      // Files can't go in JSON. FormData builds a multipart/form-data body —
+      // the same thing `curl -F` sent. The field names must match what multer
+      // and the controller expect: "file", "version", "releaseNotes".
       const form = new FormData();
       form.append("file", file);
-      form.append("version", version.trim());
+      form.append("version", version);
       form.append("releaseNotes", releaseNotes);
-      const response = await fetch(apiUrl("/api/firmware"), {
+
+      const res = await fetch("/api/firmware", {
         method: "POST",
+        // Attach the admin's badge. NOTE: we do NOT set Content-Type here —
+        // the browser sets it automatically (with the multipart boundary).
         headers: { Authorization: `Bearer ${token}` },
         body: form,
       });
-      if (response.status === 401) {
-        onSessionExpired();
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Upload failed");
         return;
       }
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.error || "Flash payload upload rejected.");
-        return;
-      }
-      setSuccess(
-        `v${data.firmware.version} staged successfully. Targets will discover payload on next check-in.`,
-      );
+
+      setSuccess(`Uploaded firmware v${data.firmware.version}.`);
+      // Clear the form for the next upload.
       setVersion("");
       setReleaseNotes("");
       setFile(null);
-      if (fileInput.current) fileInput.current.value = "";
-    } catch {
-      setError("Failed to stream artifact to cluster. Check network status.");
+      event.target.reset(); // clears the native file input
+      if (onUploaded) onUploaded();
+    } catch (err) {
+      setError("Could not reach the server.");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <section id="firmware" className="firmware-tool">
-      <div className="tool-grid">
-        {/* Flash Form */}
-        <form className="flash-panel" onSubmit={handleSubmit} aria-busy={loading}>
-          <div className="flash-panel-header mono">
-            <span>BINARY_STAGING_PIPELINE</span>
-            <span className="cyan-text">[OTA FLASH]</span>
-          </div>
+    <section>
+      <h3 className="section-head">Upload firmware</h3>
+      <form className="stack" onSubmit={handleSubmit}>
+        <label className="field">
+          <span>Version</span>
+          <input
+            className="mono"
+            value={version}
+            onChange={(e) => setVersion(e.target.value)}
+            placeholder="1.2.0"
+            pattern="\d+\.\d+\.\d+"
+            title="Format: major.minor.patch, e.g. 1.2.0"
+            required
+          />
+        </label>
 
-          <div className="flash-panel-body">
-            {/* File Dropzone / Inspector */}
-            <div className={`binary-drop ${file ? "has-file" : ""}`}>
-              <input
-                aria-label="Firmware binary"
-                type="file"
-                ref={fileInput}
-                onChange={(e) => {
-                  setFile(e.target.files[0] || null);
-                  setSuccess("");
-                }}
-                required
-              />
-              <div className="drop-content mono">
-                <Icon name={file ? "file" : "upload"} size={22} />
-                {file ? (
-                  <div>
-                    <strong className="cyan-text">{file.name}</strong>
-                    <p className="dim-text">{(file.size / 1024).toFixed(1)} KB · READY TO STAGE</p>
-                  </div>
-                ) : (
-                  <div>
-                    <strong>DROP COMPILED BINARY (.bin / .hex / .elf)</strong>
-                    <p className="dim-text">Or click to select hardware payload</p>
-                  </div>
-                )}
-              </div>
-            </div>
+        <label className="field">
+          <span>Release notes</span>
+          <input
+            value={releaseNotes}
+            onChange={(e) => setReleaseNotes(e.target.value)}
+            placeholder="What changed in this version?"
+          />
+        </label>
 
-            <div className="flash-fields">
-              <div className="field-group">
-                <label htmlFor="version" className="mono">
-                  TARGET_VERSION <span className="dim-text">[SemVer]</span>
-                </label>
-                <input
-                  id="version"
-                  className="mono"
-                  value={version}
-                  onChange={(e) => setVersion(e.target.value)}
-                  placeholder="e.g. 1.3.0"
-                  required
-                />
-              </div>
+        <label className="field">
+          <span>Firmware file</span>
+          <input type="file" onChange={(e) => setFile(e.target.files[0] || null)} required />
+          <small>Devices checking in will be offered this version.</small>
+        </label>
 
-              <div className="field-group">
-                <label htmlFor="release-notes" className="mono">
-                  ROLLOUT_CHANGELOG <span className="dim-text">[Optional]</span>
-                </label>
-                <textarea
-                  id="release-notes"
-                  className="mono"
-                  rows={3}
-                  value={releaseNotes}
-                  onChange={(e) => setReleaseNotes(e.target.value)}
-                  placeholder="Patch notes, register offsets, pin mapping updates..."
-                />
-              </div>
-            </div>
+        {error && <p className="error" role="alert">{error}</p>}
+        {success && <p className="notice" role="status">{success}</p>}
 
-            {error && (
-              <div className="message error mono">
-                [REJECTED] {error}
-              </div>
-            )}
-            {success && (
-              <div className="message success mono">
-                [STAGED] {success}
-              </div>
-            )}
-
-            <div className="flash-actions">
-              <button className="primary mono" disabled={loading}>
-                {loading ? "STAGING BINARY..." : "STAGE FIRMWARE ROLLOUT"}
-                <Icon name="arrow" size={15} />
-              </button>
-            </div>
-          </div>
-        </form>
-
-        {/* Technical Pipeline Info */}
-        <aside className="pipeline-spec mono">
-          <div className="spec-block">
-            <span className="spec-title">ROLLOUT PROTOCOL</span>
-            <p className="dim-text">
-              Payloads are streamed without intermediate filesystem buffers. Devices fetch cryptographically verified slices over TLS 1.3.
-            </p>
-          </div>
-          <div className="spec-block">
-            <span className="spec-title">CHECKSUM VALIDATION</span>
-            <p className="dim-text">
-              SHA-256 digest is generated server-side upon receipt and verified by the microcontroller bootloader before flash bank swap.
-            </p>
-          </div>
-          <div className="spec-block">
-            <span className="spec-title">VOLATILE NOTICE</span>
-            <p className="dim-text">
-              Ephemeral environment: active binary registries flush on cluster service restart.
-            </p>
-          </div>
-        </aside>
-      </div>
+        <button type="submit" className="btn" disabled={loading}>
+          {loading ? "Uploading…" : "Publish release"}
+        </button>
+      </form>
     </section>
   );
 }
+
+export default FirmwareUpload;

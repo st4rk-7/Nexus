@@ -1,12 +1,12 @@
 // server.js — the entry point of the backend.
-// Load settings, prepare the lab account, then start the web server.
+// It loads our secrets, connects to the database, then starts the web server.
 
-// This MUST be first: it reads the .env file and loads PORT, JWT_SECRET, etc.
+// This MUST be first: it reads the .env file and loads PORT, MONGODB_URI, etc.
 // into process.env so the rest of the code can use them.
 import "dotenv/config";
 
 import express from "express";
-import { seedAdmin } from "./store.js";
+import { connectDB } from "./config/db.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import firmwareRoutes from "./routes/firmwareRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -19,7 +19,7 @@ const app = express();
 // Requests without a browser Origin header (curl and IoT devices) still work.
 const allowedOrigins = (
   process.env.CLIENT_ORIGIN ||
-  "http://localhost:5174,http://127.0.0.1:5174"
+  "http://localhost:5174,http://127.0.0.1:5174,http://localhost:8080,http://127.0.0.1:8080"
 )
   .split(",")
   .map((origin) => origin.trim())
@@ -39,7 +39,7 @@ app.use((req, res, next) => {
       "Access-Control-Allow-Headers",
       "Content-Type, Authorization, x-api-key"
     );
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   }
 
   if (req.method === "OPTIONS") {
@@ -97,7 +97,8 @@ if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is required; copy .env.example to .env first");
 }
 
-await seedAdmin();
+// Connect to the database FIRST, then start listening for requests.
+await connectDB(process.env.MONGODB_URI);
 
 const server = app.listen(PORT, () => {
   console.log(`Nexus backend running on http://localhost:${server.address().port}`);

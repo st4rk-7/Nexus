@@ -1,0 +1,5 @@
+# Bun configuration.
+# `preload` runs the listed file(s) before our app starts — we use it to load
+# the compatibility shim (bun-patch.js) that fixes a missing Bun feature the
+# database library needs. See bun-patch.js for details.
+preload = ["./bun-patch.js"]

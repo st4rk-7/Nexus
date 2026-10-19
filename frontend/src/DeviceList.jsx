@@ -1,184 +1,183 @@
-import { useCallback, useEffect, useState } from "react";
-import { apiUrl } from "./api.js";
-import { Icon } from "./Icons.jsx";
+// DeviceList.jsx — the Devices section. Shows the device table with
+// search / filter / sort, and switches to the add, detail, and edit screens.
 
-function seenAt(value) {
-  if (!value || Number.isNaN(new Date(value).getTime())) return "Never";
-  const diffSec = Math.floor((Date.now() - new Date(value).getTime()) / 1000);
-  if (diffSec < 60) return `${diffSec}s ago`;
-  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
-  return new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
+import { useState, useEffect } from "react";
+import { api } from "./api.js";
+import DeviceForm from "./DeviceForm.jsx";
+import DeviceDetail from "./DeviceDetail.jsx";
 
-export default function DeviceList({ token, onSessionExpired }) {
-  const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
+function DeviceList({ token }) {
+  // Which screen we are on: { mode: "list" | "create" | "detail" | "edit", ... }
+  const [view, setView] = useState({ mode: "list" });
+
   const [devices, setDevices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [loaded, setLoaded] = useState(false);
+  // A success message (e.g. "Device deleted") shown above the table,
+  // plus the new device's API key when one was just created.
+  const [notice, setNotice] = useState({ text: "", apiKey: "" });
 
-  const loadDevices = useCallback(
-    async (signal) => {
-      setLoading(true);
-      setError("");
-      try {
-        const response = await fetch(apiUrl("/api/devices"), {
-          headers: { Authorization: `Bearer ${token}` },
-          signal,
-        });
-        if (response.status === 401) {
-          onSessionExpired();
-          return;
-        }
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.error || "Could not load devices.");
-        setDevices(data.devices || []);
-        setLoaded(true);
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          setError("Connection failed. Check backend status.");
-        }
-      } finally {
-        if (!signal?.aborted) setLoading(false);
-      }
-    },
-    [token, onSessionExpired],
-  );
+  // Search, filter and sort are sent to the server as query parameters.
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [sort, setSort] = useState("newest");
 
+  // Reload the list whenever a control changes or we come back to the list.
   useEffect(() => {
-    const controller = new AbortController();
-    loadDevices(controller.signal);
-    return () => controller.abort();
-  }, [loadDevices]);
+    if (view.mode !== "list") return;
+
+    // `ignore` stops an older, slower response from overwriting a newer one.
+    let ignore = false;
+    setLoading(true);
+    const params = new URLSearchParams({ search, status, sort });
+    api(`/api/devices?${params}`)
+      .then((data) => {
+        if (ignore) return;
+        setDevices(data.devices);
+        setError("");
+      })
+      .catch((err) => !ignore && setError(err.message))
+      .finally(() => !ignore && setLoading(false));
+    return () => {
+      ignore = true;
+    };
+  }, [search, status, sort, view.mode]);
+
+  // Each screen change starts at the top, so the heading and "back" link are visible.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
+
+  function showList(text = "", apiKey = "") {
+    setNotice({ text, apiKey });
+    setView({ mode: "list" });
+  }
+
+  if (view.mode === "create") {
+    return (
+      <DeviceForm
+        token={token}
+        onCancel={() => showList()}
+        // The API key is only returned once, at creation, so show it now.
+        onSaved={(data) =>
+          showList(`Created "${data.device.name}". Copy its API key now — it is shown only once.`, data.apiKey)
+        }
+      />
+    );
+  }
+
+  if (view.mode === "edit") {
+    return (
+      <DeviceForm
+        token={token}
+        device={view.device}
+        onCancel={() => setView({ mode: "detail", id: view.device._id })}
+        onSaved={(data) => setView({ mode: "detail", id: data.device._id })}
+      />
+    );
+  }
+
+  if (view.mode === "detail") {
+    return (
+      <DeviceDetail
+        id={view.id}
+        token={token}
+        onBack={() => showList()}
+        onEdit={(device) => setView({ mode: "edit", device })}
+        onDeleted={(message) => showList(message)}
+      />
+    );
+  }
 
   const online = devices.filter((d) => d.status === "online").length;
 
-  const visible = devices.filter(
-    (d) =>
-      (status === "all" || d.status === status) &&
-      `${d.name} ${d.type} ${d.currentFirmwareVersion}`
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-  );
-
   return (
-    <section id="devices" className="fleet-view">
-      {/* Dense Fleet Control Bar — No Big Metric Cards */}
-      <div className="fleet-strip mono">
-        <div className="fleet-stat">
-          <span className="dim-text">NODES</span>
-          <strong>{loaded ? devices.length : "—"}</strong>
-        </div>
-        <span className="divider" />
-        <div className="fleet-stat">
-          <span className="dim-text">ONLINE</span>
-          <span className="green-text">● {loaded ? online : "—"}</span>
-        </div>
-        <span className="divider" />
-        <div className="fleet-stat">
-          <span className="dim-text">OFFLINE</span>
-          <span className="dim-text">{loaded ? devices.length - online : "—"}</span>
-        </div>
-        <span className="divider" />
-        <div className="fleet-stat">
-          <span className="dim-text">HEALTH</span>
-          <span className="cyan-text">{devices.length ? `${Math.round((online / devices.length) * 100)}%` : "100%"}</span>
-        </div>
-
-        <div className="fleet-strip-actions">
-          <button
-            className="secondary compact-btn mono"
-            onClick={() => loadDevices()}
-            disabled={loading}
-          >
-            <Icon name="refresh" size={14} />
-            {loading ? "SYNCING…" : "SYNC"}
-          </button>
-        </div>
+    <section>
+      <div className="head">
+        <h2>Fleet</h2>
+        <p className="sum">
+          <b>{devices.length}</b> {devices.length === 1 ? "device" : "devices"} · <b>{online}</b> online ·{" "}
+          <b>{devices.length - online}</b> offline
+        </p>
       </div>
 
-      {error && (
-        <div role="alert" className="message error mono">
-          [ERR] {error}
+      {notice.text && (
+        <div className="notice" role="status">
+          {notice.text}
+          {notice.apiKey && <span className="mono">{notice.apiKey}</span>}
         </div>
       )}
 
-      {/* High Density Table */}
-      <div className="fleet-table-wrap">
-        <div className="table-filter-bar">
-          <div className="search-box">
-            <Icon name="search" size={15} />
-            <input
-              className="mono"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Filter by identifier, architecture, version..."
-            />
-          </div>
-          <div className="status-toggle mono">
-            {["all", "online", "offline"].map((s) => (
-              <button
-                key={s}
-                type="button"
-                className={`filter-tab ${status === s ? "active" : ""}`}
-                onClick={() => setStatus(s)}
-              >
-                {s.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
+      <div className="tools">
+        <label className="field">
+          <span>Search</span>
+          <input type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Name or type" />
+        </label>
+        <label className="field">
+          <span>Status</span>
+          <select value={status} onChange={(e) => setStatus(e.target.value)}>
+            <option value="">All</option>
+            <option value="online">Online</option>
+            <option value="offline">Offline</option>
+          </select>
+        </label>
+        <label className="field">
+          <span>Sort by</span>
+          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="name">Name (A–Z)</option>
+            <option value="status">Status</option>
+          </select>
+        </label>
+        <button className="btn" onClick={() => setView({ mode: "create" })}>Add device</button>
+      </div>
 
-        <div className="table-container">
-          <table className="dense-table mono">
+      {error && <p className="error" role="alert">{error}</p>}
+
+      {loading && devices.length === 0 ? (
+        <p className="empty">Loading devices…</p>
+      ) : devices.length === 0 ? (
+        <p className="empty">
+          {search || status
+            ? "No devices match these filters. Clear the search or status to see the whole fleet."
+            : "No devices yet. Add one here, or run the simulator to register a device."}
+        </p>
+      ) : (
+        <div className="table-wrap">
+          <table className="table">
             <thead>
               <tr>
-                <th>DEVICE_IDENTIFIER</th>
-                <th>ARCHITECTURE</th>
-                <th>FIRMWARE</th>
-                <th>HEARTBEAT</th>
-                <th>STATE</th>
+                <th>Name</th>
+                <th className="col-type">Type</th>
+                <th>Firmware</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {visible.map((device) => (
+              {/* .map turns each device object into a table row.
+                  React needs a unique `key` per row (we use the DB id). */}
+              {devices.map((device) => (
                 <tr key={device._id}>
                   <td>
-                    <div className="device-id-cell">
-                      <span className="chip-indicator" />
-                      <strong className="cyan-text">{device.name}</strong>
-                    </div>
+                    {/* The name opens the detail screen. */}
+                    <button className="link" onClick={() => setView({ mode: "detail", id: device._id })}>
+                      {device.name}
+                    </button>
                   </td>
+                  <td className="col-type">{device.type}</td>
+                  <td className="mono">{device.currentFirmwareVersion}</td>
                   <td>
-                    <span className="arch-tag">{device.type}</span>
-                  </td>
-                  <td>
-                    <span className="version-pill">v{device.currentFirmwareVersion}</span>
-                  </td>
-                  <td className="dim-text">
-                    {seenAt(device.lastSeenAt)}
-                  </td>
-                  <td>
-                    <span className={`status-tag ${device.status}`}>
-                      {device.status === "online" ? "● ONLINE" : "○ OFFLINE"}
-                    </span>
+                    <span className={`status status-${device.status}`}>{device.status}</span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-
-        {!visible.length && (
-          <div className="empty-fleet mono">
-            <Icon name="chip" size={24} />
-            <p className="dim-text">
-              {loading ? "POLLING ACTIVE FLEET..." : "NO DEVICES MATCH SPECIFIED FILTER"}
-            </p>
-          </div>
-        )}
-      </div>
+      )}
     </section>
   );
 }
+
+export default DeviceList;

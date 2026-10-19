@@ -2,7 +2,8 @@
 node_modules/
 dist/
 
-# npm lockfile — this project uses the tracked Bun lockfile.
+# npm lockfile — byproduct of installing with npm (Bun install hangs on this
+# machine). package.json is the source of truth.
 package-lock.json
 
 # Vite/editor cruft

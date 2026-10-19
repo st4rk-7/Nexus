@@ -1,150 +1,86 @@
-import { useState } from "react";
-import { apiUrl } from "./api.js";
-import { Icon } from "./Icons.jsx";
+// Login.jsx — the admin login form.
+// It collects a username + password, POSTs them to the backend, and on
+// success hands the returned JWT token up to the parent via onLogin().
 
-export default function Login({ onLogin, notice }) {
+import { useState } from "react";
+import Wordmark from "./Wordmark.jsx";
+
+// `onLogin` is a function passed in by the parent (App). We call it with the
+// token once login succeeds, so the parent can switch to the dashboard.
+function Login({ onLogin }) {
+  // --- State: React remembers these between redraws ---------------------
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Runs when the form is submitted (Login button or Enter key).
   async function handleSubmit(event) {
-    event.preventDefault();
+    event.preventDefault(); // stop the browser's default full-page reload
     setError("");
     setLoading(true);
+
     try {
-      const response = await fetch(apiUrl("/api/auth/login"), {
+      // This is our curl call, but from the browser. Vite's proxy forwards
+      // "/api/..." to the backend on :3000.
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password }),
+        body: JSON.stringify({ username, password }),
       });
-      const data = await response.json();
-      if (!response.ok) {
-        setError(data.error || "Sign-in failed. Please try again.");
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Backend replied with 400/401 — show its error message.
+        setError(data.error || "Login failed");
         return;
       }
+
+      // Success: pass the token up to App.
       onLogin(data.token, data.username);
-    } catch {
-      setError(
-        "Could not reach the server. Check that the backend is running, then try again.",
-      );
+    } catch (err) {
+      // Network error (backend not running, etc.)
+      setError("Could not reach the server. Is the backend running?");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <main id="main" className="login-layout">
-      <section className="login-story grid-paper" aria-labelledby="intro-title">
-        <p className="eyebrow">
-          <span className="square" /> Your connected workspace
-        </p>
-        <h1 id="intro-title">
-          Connected devices.
-          <br />
-          Confident decisions.
-        </h1>
-        <p className="intro-copy">
-          Monitor your devices, understand their status, and manage firmware.
-          Everything you need, in one workspace.
-        </p>
-        <div
-          className="flow-diagram bracket-frame"
-          aria-label="Device update flow: device checks for an update, then downloads firmware"
-        >
-          <div className="diagram-heading eyebrow">
-            <span>Device update flow</span>
-            <span>01 — 03</span>
-          </div>
-          <div className="flow-nodes">
-            <div>
-              <span className="node-icon">
-                <Icon name="chip" size={28} />
-              </span>
-              <span className="mono">Device</span>
-            </div>
-            <span className="flow-line">
-              <Icon name="arrow" size={16} />
-            </span>
-            <div>
-              <span className="node-icon node-active">
-                <Icon name="refresh" size={28} />
-              </span>
-              <span className="mono">Check</span>
-            </div>
-            <span className="flow-line">
-              <Icon name="arrow" size={16} />
-            </span>
-            <div>
-              <span className="node-icon">
-                <Icon name="file" size={28} />
-              </span>
-              <span className="mono">Download</span>
-            </div>
-          </div>
-          <p>From a device check-in to its next firmware version.</p>
-        </div>
-        <div className="story-footnote">
-          <span className="cross">+</span>
-          <span className="eyebrow">Built for connected systems</span>
-          <span className="rule" />
-          <span className="cross">+</span>
-        </div>
-      </section>
-      <section className="login-panel" aria-labelledby="login-title">
-        <div className="login-form-wrap">
-          <span className="section-index mono">Nexus console</span>
-          <h2 id="login-title">Welcome back</h2>
-          <p className="muted">Sign in to your Nexus workspace.</p>
-          <form
-            onSubmit={handleSubmit}
-            className="login-form"
-            aria-busy={loading}
-          >
-            {notice && (
-              <p className="message info" role="status">
-                {notice}
-              </p>
-            )}
-            <label htmlFor="username">Username</label>
-            <input
-              id="username"
-              name="username"
-              autoComplete="username"
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              placeholder="Enter your username"
-              required
-              disabled={loading}
-            />
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="Enter your password"
-              required
-              disabled={loading}
-            />
-            {error && (
-              <p className="message error" role="alert">
-                {error}
-              </p>
-            )}
-            <button className="primary login-submit" disabled={loading}>
-              {loading ? "Signing in…" : "Sign in to workspace"}
-              <Icon name="arrow" size={18} />
-            </button>
-          </form>
-          <p className="login-help">
-            <Icon name="lock" size={16} /> Access is limited to configured
-            administrators.
-          </p>
-        </div>
-      </section>
-    </main>
+    <section className="login">
+      {/* Red field: the wordmark draws itself once when the page opens. */}
+      <div className="login-mark">
+        <span />
+        <Wordmark draw />
+      </div>
+
+      <div className="login-panel">
+        <h1>Firmware control</h1>
+        <p>Register devices, ship firmware over the air, and see what every device runs.</p>
+
+        <form onSubmit={handleSubmit}>
+          <label className="field">
+            <span>Username</span>
+            <input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoFocus required />
+          </label>
+          <label className="field">
+            <span>Password</span>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" required />
+          </label>
+
+          {/* Only show the error if there is one. */}
+          {error && <p className="error" role="alert">{error}</p>}
+
+          <button type="submit" className="btn" disabled={loading}>
+            {loading ? "Signing in…" : "Sign in"}
+          </button>
+        </form>
+
+        <p className="caption">Admins sign in with a password. Devices use their own API keys.</p>
+      </div>
+    </section>
   );
 }
+
+export default Login;

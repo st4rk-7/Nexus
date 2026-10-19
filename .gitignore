@@ -16,6 +16,9 @@ npm-debug.log*
 dist/
 build/
 
+# Uploaded firmware files
+uploads/
+
 # Operating system & IDE files
 .DS_Store
 Thumbs.db
