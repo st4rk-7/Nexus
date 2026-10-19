@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.14
+FROM oven/bun:latest
 
 WORKDIR /app
 
