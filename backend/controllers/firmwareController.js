@@ -25,14 +25,16 @@ export const uploadFirmware = async (req, res) => {
       return res.status(400).json({ error: `Firmware version ${version} already exists` });
     }
 
-    // Usually when we upload a new firmware, we might want to make older ones inactive.
-    // For now, let's just save it.
-    
+    // When uploading a new firmware version, mark older releases inactive so
+    // devices are always directed to the latest active binary.
+    await Firmware.updateMany({}, { isActive: false });
+
     // Save the file path so we know where to find it for download later
     const newFirmware = await Firmware.create({
       version,
       releaseNotes,
       filePath: req.file.path,
+      isActive: true,
       uploadedBy: req.admin._id, // set by the `protect` middleware
     });
 

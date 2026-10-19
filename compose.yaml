@@ -7,6 +7,8 @@ services:
       CLIENT_ORIGIN: "http://localhost:8080,http://127.0.0.1:8080"
     ports:
       - "3001:3001"
+    volumes:
+      - uploads_data:/app/uploads
 
   frontend:
     build: ./frontend
@@ -14,3 +16,19 @@ services:
       - backend
     ports:
       - "8080:80"
+
+  # Lab PCs have no Bun/Node: `docker compose run --rm simulator`
+  simulator:
+    image: oven/bun:latest
+    profiles: ["sim"]
+    depends_on:
+      - backend
+    environment:
+      API_URL: "http://backend:3001"
+    volumes:
+      - ./simulator:/sim:ro
+    working_dir: /sim
+    command: ["bun", "device.js"]
+
+volumes:
+  uploads_data:
