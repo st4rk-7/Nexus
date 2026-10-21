@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, expect, test } from "bun:test";
+import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { MongoClient } from "mongodb";
 
 const backendDirectory = fileURLToPath(new URL("..", import.meta.url));
 
@@ -7,6 +9,8 @@ let server;
 let base;
 let token;
 const password = "test-password-2026";
+const testDatabaseName = `nexus_test_${randomUUID().replaceAll("-", "")}`;
+const mongoUri = process.env.MONGODB_TEST_URI || process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/nexus";
 
 async function startServer() {
   server = Bun.spawn([process.execPath, "server.js"], {
@@ -14,6 +18,8 @@ async function startServer() {
     env: {
       ...process.env,
       PORT: "0",
+      MONGODB_URI: mongoUri,
+      MONGODB_DB: testDatabaseName,
       JWT_SECRET: "integration-test-secret-only",
       ADMIN_USERNAME: "test-admin",
       ADMIN_PASSWORD: password,
@@ -21,15 +27,19 @@ async function startServer() {
       MAX_FIRMWARE_SIZE_MB: "1",
     },
     stdout: "pipe",
-    stderr: "inherit",
+    stderr: "pipe",
   });
   const reader = server.stdout.getReader();
+  const stderr = new Response(server.stderr).text();
   const timeout = setTimeout(() => server.kill(), 5000);
   let output = "";
   try {
     while (true) {
       const { value, done } = await reader.read();
-      if (done) throw new Error("Backend stopped before startup");
+      if (done) {
+        await server.exited;
+        throw new Error(`Backend stopped before startup: ${await stderr}`);
+      }
       output += new TextDecoder().decode(value);
       const match = output.match(/http:\/\/localhost:\d+/);
       if (match) { base = match[0]; return; }
@@ -70,9 +80,15 @@ beforeAll(async () => {
   expect(response.status).toBe(200);
   token = (await response.json()).token;
 });
-afterAll(stopServer);
+afterAll(async () => {
+  await stopServer();
+  const client = new MongoClient(mongoUri);
+  await client.connect();
+  await client.db(testDatabaseName).dropDatabase();
+  await client.close();
+});
 
-test("health and authentication work without a database", async () => {
+test("health and authentication work with MongoDB", async () => {
   expect((await fetch(`${base}/health`)).status).toBe(200);
   expect((await fetch(`${base}/api/devices`)).status).toBe(401);
   expect((await post("/api/auth/login", { username: "test-admin", password: "wrong" })).status).toBe(401);
@@ -140,15 +156,15 @@ test("the original simulator completes an update against the backend", async () 
   expect(output).toContain("OTA loop complete");
 });
 
-test("restart clears temporary data and recreates the configured lab account", async () => {
+test("restart preserves devices, firmware and the configured lab account", async () => {
   await stopServer();
   await startServer();
-  expect((await fetch(`${base}/api/devices`, { headers: { Authorization: `Bearer ${token}` } })).status).toBe(401);
+  expect((await fetch(`${base}/api/devices`, { headers: { Authorization: `Bearer ${token}` } })).status).toBe(200);
   const login = await post("/api/auth/login", { username: "test-admin", password });
   expect(login.status).toBe(200);
   const freshToken = (await login.json()).token;
-  for (const path of ["devices", "firmware"]) {
-    const response = await fetch(`${base}/api/${path}`, { headers: { Authorization: `Bearer ${freshToken}` } });
-    expect((await response.json()).count).toBe(0);
-  }
+  const devices = await fetch(`${base}/api/devices`, { headers: { Authorization: `Bearer ${freshToken}` } });
+  expect((await devices.json()).count).toBeGreaterThan(0);
+  const firmwares = await fetch(`${base}/api/firmware`, { headers: { Authorization: `Bearer ${freshToken}` } });
+  expect((await firmwares.json()).count).toBeGreaterThan(0);
 });

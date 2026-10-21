@@ -1,8 +1,8 @@
-import { store } from "../store.js";
+import { findDeviceByApiKey } from "../store.js";
 
-export function deviceAuth(req, res, next) {
+export async function deviceAuth(req, res, next) {
   const apiKey = req.headers["x-api-key"];
-  const device = [...store.devices.values()].find((item) => item.apiKey === apiKey);
+  const device = await findDeviceByApiKey(apiKey);
   if (!device) {
     return res.status(401).json({ error: "Not authorized — invalid or missing device API key" });
   }

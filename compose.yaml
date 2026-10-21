@@ -1,10 +1,27 @@
 services:
+  mongo:
+    image: mongo:8
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     build: ./backend
     env_file: ./backend/.env
     environment:
       PORT: "3001"
-      CLIENT_ORIGIN: "http://localhost:8080,http://127.0.0.1:8080"
+      MONGODB_URI: mongodb://mongo:27017/nexus
+      CLIENT_ORIGIN: "http://localhost:8081,http://127.0.0.1:8081"
+    depends_on:
+      mongo:
+        condition: service_healthy
     ports:
       - "3001:3001"
 
@@ -13,4 +30,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "8080:80"
+      - "8081:80"
+
+volumes:
+  mongodb_data:

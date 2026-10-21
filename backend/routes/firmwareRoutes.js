@@ -8,7 +8,7 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Keep uploads in memory for this lab. Limit the size of each file.
+// Buffer each request for validation, then persist its binary to MongoDB GridFS.
 const maxFileSizeMb = Number(process.env.MAX_FIRMWARE_SIZE_MB || 10);
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -20,7 +20,7 @@ const upload = multer({
 
 // Routes
 // Uploading firmware is admin-only. `protect` runs first (checks the JWT badge),
-// then multer reads the file, then the controller keeps it in memory.
+// then multer reads the file, then the controller writes it to GridFS.
 router.post("/", protect, upload.single("file"), uploadFirmware);
 
 router.get("/", protect, getFirmwareVersions);

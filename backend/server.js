@@ -6,6 +6,7 @@
 import "dotenv/config";
 
 import express from "express";
+import { closeDatabase, connectToDatabase } from "./database.js";
 import { seedAdmin } from "./store.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import firmwareRoutes from "./routes/firmwareRoutes.js";
@@ -97,6 +98,7 @@ if (!process.env.JWT_SECRET) {
   throw new Error("JWT_SECRET is required; copy .env.example to .env first");
 }
 
+await connectToDatabase();
 await seedAdmin();
 
 const server = app.listen(PORT, () => {
@@ -104,5 +106,8 @@ const server = app.listen(PORT, () => {
 });
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.on(signal, () => server.close(() => process.exit(0)));
+  process.on(signal, () => server.close(async () => {
+    await closeDatabase();
+    process.exit(0);
+  }));
 }

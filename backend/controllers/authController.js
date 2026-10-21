@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import { createAdmin, store } from "../store.js";
+import { createAdmin, findAdminByUsername } from "../store.js";
 
 function session(admin) {
   return {
@@ -28,8 +28,8 @@ export async function loginAdmin(req, res) {
   if (typeof username !== "string" || typeof password !== "string") {
     return res.status(400).json({ error: "Please provide a username and password" });
   }
-  const admin = store.admin;
-  if (!admin || admin.username !== username.trim() ||
+  const admin = await findAdminByUsername(username.trim());
+  if (!admin ||
       !(await bcrypt.compare(password, admin.passwordHash))) {
     return res.status(401).json({ error: "Invalid username or password" });
   }
