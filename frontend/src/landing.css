@@ -1,4 +1,4 @@
-/* landing.css — the public landing page only. Dark, flat, Geist.
+/* landing.css — the public landing page only. Light, flat, Geist.
    Values follow the landing-page-design skill: Tailwind type scale,
    the fixed spacing set, Tailwind radii, one easing curve. */
 
@@ -16,16 +16,17 @@
 }
 
 .lp {
-  --lp-bg: #000000;
-  --lp-surface: #181818;
-  --lp-surface-2: #1f1f1f;
-  --lp-line: #272727;
-  --lp-line-2: #313131;
-  --lp-text: #ffffff;
-  --lp-muted: #9b9b9b;
+  /* Light theme: the console's paper, panels and ink, with its red as accent. */
+  --lp-bg: #f5f4f0;
+  --lp-surface: #ffffff;
+  --lp-surface-2: #f5f4f0;
+  --lp-line: #dcd9d2;
+  --lp-line-2: #cfccc4;
+  --lp-text: #141414;
+  --lp-muted: #55534e;
   --lp-red: #d12a22;       /* same red as the login and console bar */
   --lp-red-dark: #ab211b;
-  --lp-red-text: #ff5a4f;  /* lighter red for small text on black, about 6:1 contrast */
+  --lp-red-text: #ab211b;  /* darker red for small text on paper, about 6:1 contrast */
   --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --lp-mono: "Geist Mono", ui-monospace, monospace;
 
@@ -36,10 +37,10 @@
   font-family: "Geist", system-ui, sans-serif;
   font-size: 16px;
   line-height: 24px;
-  color-scheme: dark;
+  color-scheme: light;
 }
 .lp ::selection { background: var(--lp-red); color: #ffffff; }
-.lp :focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+.lp :focus-visible { outline: 2px solid var(--lp-text); outline-offset: 2px; }
 :where(.lp) :is(h1, h2, h3) { text-wrap: balance; font-weight: 600; margin: 0; }
 :where(.lp) p { text-wrap: pretty; margin: 0; }
 .lp a { color: inherit; }
@@ -51,8 +52,8 @@
   z-index: 30;
   padding: 8px 12px;
   border-radius: 12px;
-  background: #ffffff;
-  color: #000000;
+  background: var(--lp-text);
+  color: #ffffff;
   transform: translateY(-64px);
   transition: transform 300ms var(--lp-ease);
 }
@@ -89,7 +90,7 @@
   padding: 8px 8px 8px 16px;
   border: 1px solid var(--lp-line);
   border-radius: 9999px;
-  background: rgba(24, 24, 24, 0.72);
+  background: rgba(255, 255, 255, 0.72);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -138,7 +139,7 @@
   display: flex;
   align-items: center;
   padding: 96px 24px;
-  background: rgba(0, 0, 0, 0.92);
+  background: rgba(245, 244, 240, 0.92);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   /* Closed: invisible and unfocusable; visibility flips after the fade out. */
@@ -173,7 +174,7 @@
   font-size: 60px;
   line-height: 1;
   letter-spacing: -0.03em;
-  background: linear-gradient(90deg, #ffffff, #9b9b9b);
+  background: linear-gradient(90deg, #000000, #666666);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -218,7 +219,7 @@
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
-.lp-word { color: rgba(255, 255, 255, 0.3); transition: color 500ms var(--lp-ease); }
+.lp-word { color: rgba(20, 20, 20, 0.3); transition: color 500ms var(--lp-ease); }
 .lp-word.is-on { color: var(--lp-text); }
 .lp-word.is-red.is-on { color: var(--lp-red-text); }
 
