@@ -1,9 +1,10 @@
 // App.jsx — the top-level component. It decides what to show:
-//   - not logged in  -> the 3D WebGL / GSAP Landing Hero (with toggleable Login)
+//   - not logged in  -> the landing page, then the Login form
 //   - logged in      -> the dashboard (devices, firmware upload, releases)
 
 import { useState } from "react";
-import LandingHero from "./LandingHero.jsx";
+import Login from "./Login.jsx";
+import Landing from "./Landing.jsx";
 import DeviceList from "./DeviceList.jsx";
 import FirmwareUpload from "./FirmwareUpload.jsx";
 import Wordmark from "./Wordmark.jsx";
@@ -16,8 +17,10 @@ function App() {
   const [username, setUsername] = useState(() => localStorage.getItem("username") || "");
   // Bumped after each upload so the Releases list remounts and re-fetches.
   const [releasesKey, setReleasesKey] = useState(0);
+  // Logged-out visitors see the landing page until they choose to sign in.
+  const [showLogin, setShowLogin] = useState(false);
 
-  // Called after a successful login.
+  // Called by <Login /> after a successful login.
   function handleLogin(newToken, newUsername) {
     setToken(newToken);
     setUsername(newUsername);
@@ -32,8 +35,17 @@ function App() {
     localStorage.removeItem("username");
   }
 
-  // If not logged in, render the 3D Landing Hero (which embeds Login on click)
-  if (!token) return <LandingHero onLogin={handleLogin} />;
+  // If we have no token, show the login screen. Otherwise, the dashboard.
+  if (!token && !showLogin) return <Landing onStart={() => setShowLogin(true)} />;
+  if (!token)
+    return (
+      <>
+        <button type="button" className="login-back" onClick={() => setShowLogin(false)}>
+          ← Back to overview
+        </button>
+        <Login onLogin={handleLogin} />
+      </>
+    );
 
   return (
     <>
