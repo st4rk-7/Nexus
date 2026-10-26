@@ -2,7 +2,7 @@
 // Scroll reveals and the tagline use IntersectionObserver, never a scroll listener.
 
 import { useEffect, useRef, useState } from "react";
-import Wordmark from "./Wordmark.jsx";
+import { NexusLogo } from "./NexusLogo.jsx";
 import consoleShot from "./assets/console.webp";
 import "./landing.css";
 
@@ -130,7 +130,7 @@ function Landing({ onStart }) {
 
       <nav className="lp-nav" aria-label="Main">
         <a href="#top" className="lp-brand" aria-label="Nexus home">
-          <Wordmark />
+          <NexusLogo size={18} />
         </a>
         <ul className="lp-links">
           {NAV.map((l) => (

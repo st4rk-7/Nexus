@@ -152,9 +152,8 @@ p { margin: 0; }
 .login-panel form { display: grid; gap: 16px; max-width: 380px; }
 .login-panel .caption { font-size: 13px; color: var(--ink-2); }
 
-/* The monoline wordmark. Stroke width scales with the drawing. */
-.wordmark { display: block; width: 100%; height: auto; overflow: visible; }
-.wordmark path { fill: none; stroke: currentColor; stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; }
+/* Logo sizes: the text scales with font-size, the mark with its size prop. */
+.login-logo { font-size: 4.5rem; }
 
 /* =========================================================
    App shell
@@ -171,8 +170,7 @@ p { margin: 0; }
   background: var(--red);
   color: #fff;
 }
-.bar .wordmark { width: auto; height: 22px; }
-.bar .wordmark path { stroke-width: 18; }
+.bar-logo { font-size: 1.25rem; }
 .bar .who { margin-left: auto; display: flex; align-items: center; gap: 16px; font-size: 14px; }
 .bar .who button {
   padding: 6px 0;

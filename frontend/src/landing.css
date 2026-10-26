@@ -94,9 +94,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
-.lp-nav .lp-brand { display: flex; color: var(--lp-red-text); }
-.lp-brand .wordmark { width: auto; height: 16px; }
-.lp-brand .wordmark path { stroke-width: 18; }
+.lp-nav .lp-brand { display: flex; text-decoration: none; }
 .lp-links { display: flex; gap: 24px; margin: 0; padding: 0; list-style: none; }
 .lp-links a {
   font-size: 14px;

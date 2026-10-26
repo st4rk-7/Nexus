@@ -7,7 +7,7 @@ import Login from "./Login.jsx";
 import Landing from "./Landing.jsx";
 import DeviceList from "./DeviceList.jsx";
 import FirmwareUpload from "./FirmwareUpload.jsx";
-import Wordmark from "./Wordmark.jsx";
+import { NexusLogo } from "./NexusLogo.jsx";
 import Releases from "./Releases.jsx";
 
 function App() {
@@ -50,7 +50,7 @@ function App() {
   return (
     <>
       <header className="bar">
-        <Wordmark />
+        <NexusLogo inverse size={22} className="bar-logo" />
         <div className="who">
           <span>{username}</span>
           <button onClick={handleLogout}>Log out</button>

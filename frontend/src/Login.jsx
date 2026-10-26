@@ -3,7 +3,7 @@
 // success hands the returned JWT token up to the parent via onLogin().
 
 import { useState } from "react";
-import Wordmark from "./Wordmark.jsx";
+import { NexusLogo } from "./NexusLogo.jsx";
 
 // `onLogin` is a function passed in by the parent (App). We call it with the
 // token once login succeeds, so the parent can switch to the dashboard.
@@ -49,10 +49,10 @@ function Login({ onLogin }) {
 
   return (
     <section className="login">
-      {/* Red field: the wordmark draws itself once when the page opens. */}
+      {/* Red field with the logo at the bottom. */}
       <div className="login-mark">
         <span />
-        <Wordmark draw />
+        <NexusLogo inverse size={88} className="login-logo" />
       </div>
 
       <div className="login-panel">
