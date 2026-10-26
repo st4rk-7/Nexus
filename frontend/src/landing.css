@@ -23,6 +23,9 @@
   --lp-line-2: #313131;
   --lp-text: #ffffff;
   --lp-muted: #9b9b9b;
+  --lp-red: #d12a22;       /* same red as the login and console bar */
+  --lp-red-dark: #ab211b;
+  --lp-red-text: #ff5a4f;  /* lighter red for small text on black, about 6:1 contrast */
   --lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --lp-mono: "Geist Mono", ui-monospace, monospace;
 
@@ -35,7 +38,7 @@
   line-height: 24px;
   color-scheme: dark;
 }
-.lp ::selection { background: #ffffff; color: #000000; }
+.lp ::selection { background: var(--lp-red); color: #ffffff; }
 .lp :focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
 :where(.lp) :is(h1, h2, h3) { text-wrap: balance; font-weight: 600; margin: 0; }
 :where(.lp) p { text-wrap: pretty; margin: 0; }
@@ -63,13 +66,13 @@
   padding: 8px 12px;
   border: 0;
   border-radius: 12px;
-  background: #ffffff;
-  color: #000000;
+  background: var(--lp-red);
+  color: #ffffff;
   font: 600 16px/24px "Geist", system-ui, sans-serif;
   cursor: pointer;
-  transition: opacity 300ms var(--lp-ease), transform 300ms var(--lp-ease);
+  transition: background-color 300ms var(--lp-ease), transform 300ms var(--lp-ease);
 }
-.lp-btn:hover { opacity: 0.86; transform: translateY(-2px); }
+.lp-btn:hover { background: var(--lp-red-dark); transform: translateY(-2px); }
 .lp-btn:active { transform: scale(0.98); }
 .lp-btn-sm { font-size: 14px; line-height: 20px; }
 
@@ -90,7 +93,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
-.lp-brand { display: flex; color: var(--lp-text); }
+.lp-nav .lp-brand { display: flex; color: var(--lp-red-text); }
 .lp-brand .wordmark { width: auto; height: 16px; }
 .lp-brand .wordmark path { stroke-width: 18; }
 .lp-links { display: flex; gap: 24px; margin: 0; padding: 0; list-style: none; }
@@ -101,7 +104,7 @@
   text-decoration: none;
   transition: opacity 300ms var(--lp-ease), color 300ms var(--lp-ease);
 }
-.lp-links a:hover { color: var(--lp-text); }
+.lp-links a:hover { color: var(--lp-red-text); }
 .lp-nav-cta { border-radius: 9999px; }
 
 .lp-toggle {
@@ -202,7 +205,7 @@
   display: block;
   margin-bottom: 16px;
   font: 400 12px/16px var(--lp-mono);
-  color: var(--lp-muted);
+  color: var(--lp-red-text);
   letter-spacing: 0.04em;
 }
 
@@ -217,6 +220,7 @@
 }
 .lp-word { color: rgba(255, 255, 255, 0.3); transition: color 500ms var(--lp-ease); }
 .lp-word.is-on { color: var(--lp-text); }
+.lp-word.is-red.is-on { color: var(--lp-red-text); }
 
 /* --- Steps --- */
 .lp-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0; padding: 0; list-style: none; }
@@ -270,7 +274,7 @@
   transition: opacity 300ms var(--lp-ease);
 }
 .lp-faq summary::-webkit-details-marker { display: none; }
-.lp-faq summary::after { content: "+"; color: var(--lp-muted); transition: transform 300ms var(--lp-ease); }
+.lp-faq summary::after { content: "+"; color: var(--lp-red-text); transition: transform 300ms var(--lp-ease); }
 .lp-faq details[open] summary::after { transform: rotate(45deg); }
 .lp-faq summary:hover { opacity: 0.8; }
 .lp-faq details p { padding: 0 24px 16px; }
@@ -292,7 +296,7 @@
   color: var(--lp-muted);
 }
 .lp-footer a { text-decoration: none; transition: color 300ms var(--lp-ease); }
-.lp-footer a:hover { color: var(--lp-text); }
+.lp-footer a:hover { color: var(--lp-red-text); }
 
 /* --- Scroll reveal: rise 32px and fade, once --- */
 .lp-reveal { opacity: 0; transform: translateY(32px); transition: opacity 700ms var(--lp-ease), transform 700ms var(--lp-ease); }

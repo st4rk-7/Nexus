@@ -220,8 +220,9 @@ function Landing({ onStart }) {
 
         <section className="lp-section lp-tagline" aria-label="Summary">
           <p ref={taglineRef}>
-            {TAGLINE.split(" ").map((w, i) => (
-              <span className="lp-word" key={i}>{w} </span>
+            {TAGLINE.split(" ").map((w, i, all) => (
+              // The second sentence ("Every install on record.") lights up red.
+              <span className={`lp-word${i >= all.length - 4 ? " is-red" : ""}`} key={i}>{w} </span>
             ))}
           </p>
         </section>
