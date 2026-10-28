@@ -1,10 +1,29 @@
 services:
+  mongo:
+    image: mongo:8.0
+    ports:
+      - "127.0.0.1:27017:27017" # host access for `bun run dev` and Compass
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   backend:
     build: ./backend
     env_file: ./backend/.env
     environment:
       PORT: "3001"
       CLIENT_ORIGIN: "http://localhost:8080,http://127.0.0.1:8080"
+      MONGODB_URI: "mongodb://mongo:27017/nexus"
+      # Lab login, created on first start if missing.
+      ADMIN_USERNAME: "admin"
+      ADMIN_PASSWORD: "admin123"
+    depends_on:
+      mongo:
+        condition: service_healthy
     ports:
       - "3001:3001"
     volumes:
@@ -31,4 +50,5 @@ services:
     command: ["bun", "device.js"]
 
 volumes:
+  mongo_data:
   uploads_data:

@@ -7,7 +7,7 @@
 import mongoose from "mongoose";
 
 // We wrap it in a function so server.js can call it on startup.
-// `async` because connecting takes time (it goes over the internet to Atlas),
+// `async` because connecting takes time (it goes over the network to the mongo container),
 // and `await` lets us wait for it to finish before moving on.
 export async function connectDB(uri) {
   try {

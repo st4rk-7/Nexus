@@ -10,6 +10,7 @@ import { connectDB } from "./config/db.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import firmwareRoutes from "./routes/firmwareRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import { Admin } from "./models/Admin.js";
 
 // `express()` creates our application — the thing that listens for HTTP
 // requests and decides how to respond to each one.
@@ -99,6 +100,13 @@ if (!process.env.JWT_SECRET) {
 
 // Connect to the database FIRST, then start listening for requests.
 await connectDB(process.env.MONGODB_URI);
+
+// A fresh local database has no admin, so create one from the env if set.
+const { ADMIN_USERNAME, ADMIN_PASSWORD } = process.env;
+if (ADMIN_USERNAME && ADMIN_PASSWORD && !(await Admin.exists({ username: ADMIN_USERNAME }))) {
+  await Admin.create({ username: ADMIN_USERNAME, password: ADMIN_PASSWORD });
+  console.log(`👤 Created admin "${ADMIN_USERNAME}"`);
+}
 
 const server = app.listen(PORT, () => {
   console.log(`Nexus backend running on http://localhost:${server.address().port}`);

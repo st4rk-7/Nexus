@@ -5,9 +5,10 @@ Admins register devices, manage releases, and monitor fleet status. Devices chec
 
 ## Tech Stack
 
-- **Backend:** Express on Bun with Mongoose (MongoDB Atlas)
+- **Backend:** Express on Bun with Mongoose
+- **Database:** MongoDB 8 in Docker (`mongo` service, data in the `mongo_data` volume)
 - **Frontend:** React + Vite
-- **Containers:** Docker & Docker Compose (Nginx frontend reverse proxy + Node/Bun backend + simulator profile)
+- **Containers:** Docker & Docker Compose (Nginx frontend reverse proxy + Bun backend + MongoDB + simulator profile)
 - **Authentication:** JWT for administrators, API keys (`x-api-key`) for IoT devices
 
 ## Services & Ports
@@ -19,8 +20,10 @@ Admins register devices, manage releases, and monitor fleet status. Devices chec
 ## Run with Docker Compose
 
 ```sh
-docker compose up -d
+docker compose up -d --build
 ```
+
+Log in at `http://localhost:8080` with `admin` / `admin123` (created on first start).
 
 To run the device simulator inside Docker (no local Bun/Node required on lab PCs):
 
@@ -33,9 +36,10 @@ docker compose run --rm simulator
 **Terminal 1 — Backend:**
 
 ```sh
+docker compose up -d mongo # local database
 cd backend
 bun install
-cp .env.example .env # set MONGODB_URI and JWT_SECRET
+cp .env.example .env # set JWT_SECRET
 bun run dev
 ```
 
