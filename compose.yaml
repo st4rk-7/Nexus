@@ -2,8 +2,8 @@ services:
   mongo:
     image: mongo:8.0
     environment:
-      # MongoDB 8 needs rseq for its memory allocator; stop glibc taking it (lab PCs fail without this).
-      GLIBC_TUNABLES: "glibc.pthread.rseq=0"
+      # Lab PCs: mongo 8 fails to start without this; rseq=1 is the value tested there.
+      GLIBC_TUNABLES: "glibc.pthread.rseq=1"
     ports:
       - "127.0.0.1:27017:27017" # host access for `bun run dev` and Compass
     volumes:
