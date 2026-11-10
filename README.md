@@ -14,7 +14,7 @@ Admins register devices, manage releases, and monitor fleet status. Devices chec
 ## Services & Ports
 
 - **Frontend (Dev):** `http://localhost:5174` (proxies `/api` to port 3001)
-- **Frontend (Docker):** `http://localhost:8080`
+- **Frontend (Docker):** `http://localhost:8081`
 - **Backend API:** `http://localhost:3001` (health check: `/health`)
 
 ## Run with Docker Compose
@@ -23,7 +23,7 @@ Admins register devices, manage releases, and monitor fleet status. Devices chec
 docker compose up -d --build
 ```
 
-Log in at `http://localhost:8080` with `admin` / `admin123` (created on first start).
+Log in at `http://localhost:8081` with `admin` / `admin123` (created on first start).
 
 To run the device simulator inside Docker (no local Bun/Node required on lab PCs):
 

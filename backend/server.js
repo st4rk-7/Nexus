@@ -20,7 +20,7 @@ const app = express();
 // Requests without a browser Origin header (curl and IoT devices) still work.
 const allowedOrigins = (
   process.env.CLIENT_ORIGIN ||
-  "http://localhost:5174,http://127.0.0.1:5174,http://localhost:8080,http://127.0.0.1:8080"
+  "http://localhost:5174,http://127.0.0.1:5174,http://localhost:8081,http://127.0.0.1:8081"
 )
   .split(",")
   .map((origin) => origin.trim())

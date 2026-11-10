@@ -27,7 +27,7 @@ const STEPS = [
 ];
 
 const FAQ = [
-  ["Do I need Node or Bun on my computer?", "No. Docker is enough. Run docker compose up and open localhost:8080."],
+  ["Do I need Node or Bun on my computer?", "No. Docker is enough. Run docker compose up and open localhost:8081."],
   ["How does a device prove who it is?", "It sends the API key it received at registration in a request header. The key is shown once and never listed again."],
   ["Which release does a device get?", "The newest active release. Publishing a new version marks the older ones inactive."],
   ["What if a device fails during the update?", "Nexus only changes a device's recorded version after the device reports the install, so a failed update leaves the old version on record."],
