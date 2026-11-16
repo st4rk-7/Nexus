@@ -1,7 +1,7 @@
 // CI/CD for Nexus: build the images, run the tests, redeploy the stack, check it is up.
 pipeline {
-    // Runs on the lab agent whose work folder is ~/jenkins-agent.
-    agent { label 'lab-agent' }
+    // Runs on the lab's rootless-user-agent (work folder ~/jenkins-agent).
+    agent { label 'rootless-docker' }
 
     environment {
         // Same name as a manual `docker compose up`, so Jenkins updates that stack and its volumes.
