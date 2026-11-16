@@ -8,6 +8,12 @@ pipeline {
         COMPOSE_PROJECT_NAME = 'nexus-devops'
     }
 
+    triggers {
+        // Check GitHub about every 2 minutes; build when there is a new commit.
+        // Lab Jenkins is not reachable from GitHub, so a webhook cannot be used.
+        pollSCM('H/2 * * * *')
+    }
+
     stages {
         stage('Prepare') {
             steps {
